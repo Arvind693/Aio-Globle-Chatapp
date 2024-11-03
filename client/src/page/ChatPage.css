@@ -1,0 +1,18 @@
+
+.chatPageMainContainer {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;           
+    width: 100%;             
+    box-sizing: border-box;     
+    overflow: hidden;        
+  }
+  
+ 
+  .sidebarAndChatboxContainer {
+    display: flex;
+    flex: 1;                  
+    height: 100%;            
+    overflow: hidden;    
+    /* background-color: aqua;         */
+  }

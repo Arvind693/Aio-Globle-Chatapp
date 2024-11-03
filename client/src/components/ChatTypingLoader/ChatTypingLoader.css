@@ -1,0 +1,33 @@
+.chat-typing-loader {
+    width: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 10px 0;
+}
+
+.dot {
+    width: 10px;
+    height: 10px;
+    margin: 0 5px;
+    background-color: #17a34a; /* Change color to fit your theme */
+    border-radius: 50%;
+    animation: bounce 0.6s infinite alternate;
+}
+
+.dot:nth-child(2) {
+    animation-delay: 0.2s; /* Delay for the second dot */
+}
+
+.dot:nth-child(3) {
+    animation-delay: 0.4s; /* Delay for the third dot */
+}
+
+@keyframes bounce {
+    0% {
+        transform: translateY(0);
+    }
+    100% {
+        transform: translateY(-10px); /* Adjust bounce height */
+    }
+}

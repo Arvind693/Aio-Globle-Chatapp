@@ -1,0 +1,38 @@
+.message-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px; /* Space between messages */
+  }
+  
+  .message {
+    position: relative; /* Position for absolute delete button */
+    padding: 10px;
+    border-radius: 8px;
+    max-width: 70%; /* Limit the width of messages */
+  }
+  
+  .sent {
+    align-self: flex-end;
+    background-color: #dcf8c6; /* Light green for sent messages */
+  }
+  
+  .received {
+    align-self: flex-start;
+    background-color: #f1f1f1; /* Light gray for received messages */
+  }
+  
+  .delete-button {
+    display: none; /* Hidden by default */
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: red; /* Red color for delete icon */
+  }
+  
+  .message:hover .delete-button {
+    display: block; /* Show delete button on hover */
+  }
+  
