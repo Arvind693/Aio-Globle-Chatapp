@@ -27,12 +27,9 @@ const ChatBox = () => {
   const chatId = selectedChat ? selectedChat._id : null;
 
   const scrollToBottom = () => {
-    const chatContainer = messagesEndRef.current?.parentNode;
-    if (chatContainer) {
-      chatContainer.scrollTop = chatContainer.scrollHeight;
-    }
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
   };
-
+  
   useEffect(() => {
     if (user) {
       socket.emit("setup", user._id);
