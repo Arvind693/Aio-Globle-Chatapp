@@ -23,7 +23,7 @@ const MyChats = ({ fetchAgain }) => {
           Authorization: `Bearer ${userInfo.token}`,
         },
       };
-      const { data } = await axios.get('http://localhost:5000/api/chat', config);
+      const { data } = await axios.get('/api/chat', config);
       setChats(data);
       console.log(chats);
     } catch (error) {
@@ -35,7 +35,7 @@ const MyChats = ({ fetchAgain }) => {
     setLoggedUser(JSON.parse(localStorage.getItem('userInfo')));
     fetchChats();
   }, [fetchAgain]);
-
+  
   return (
     <div
       style={{

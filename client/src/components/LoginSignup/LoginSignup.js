@@ -45,7 +45,7 @@ const LoginSignUp = () => {
       if (profileImage) formData.append('profileImage', profileImage);
 
       try {
-        const response = await axios.post('http://localhost:5000/api/user/register', formData, {
+        const response = await axios.post('/api/user/register', formData, {
           headers: { 'Content-Type': 'multipart/form-data' },
         });
         if (response.data.success) {
@@ -69,7 +69,7 @@ const LoginSignUp = () => {
     } else {
       // Sign In logic
       try {
-        const response = await axios.post('http://localhost:5000/api/user/login', { email, password });
+        const response = await axios.post(`/api/user/login`, { email, password });
         if (response.data.success) {
           message.success(response.data.message, 2);
           // Store user info in localStorage

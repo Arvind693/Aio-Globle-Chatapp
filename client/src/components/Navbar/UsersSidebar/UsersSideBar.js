@@ -17,13 +17,13 @@ const Sidebar = () => {
           authorization: `Bearer ${userInfo?.token}`, // Ensure correct token format
         },
       };
-      const { data } = await axios.get('http://localhost:5000/api/chat', config);
+      const { data } = await axios.get('/api/chat', config);
       setChats(data); // Set the chats after fetching
     } catch (error) {
       console.error('Error fetching chats:', error);
     }
   };
-
+  
   // On component mount, set the logged-in user and fetch chats
   useEffect(() => {
     const storedUserInfo = JSON.parse(localStorage.getItem('userInfo'));

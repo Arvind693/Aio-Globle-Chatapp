@@ -43,7 +43,7 @@ const UserDetails = ({ onClose }) => {
                 },
             };
 
-            const { data } = await axios.get(`http://localhost:5000/api/user/search?q=${searchTerm}`, config);
+            const { data } = await axios.get(`/api/user/search?q=${searchTerm}`, config);
 
             setSearchResults(data.data); // Update with search results
             setLoading(false);
@@ -87,7 +87,7 @@ const UserDetails = ({ onClose }) => {
             };
             const body = { chatId: selectedChat._id, newGroupName };
 
-            await axios.put(`http://localhost:5000/api/chat/rename-group`, body, config);
+            await axios.put(`/api/chat/rename-group`, body, config);
             setSelectedChat((prevChat) => ({
                 ...prevChat,
                 chatName: newGroupName,
@@ -111,7 +111,7 @@ const UserDetails = ({ onClose }) => {
             };
 
             const response = await axios.put(
-                `http://localhost:5000/api/chat/group/remove`,
+                `/api/chat/group/remove`,
                 { userId, chatId: selectedChat._id },
                 config
             );
@@ -134,7 +134,7 @@ const UserDetails = ({ onClose }) => {
                 },
             };
 
-          const response = await axios.delete(`http://localhost:5000/api/chat/${selectedChat._id}`, config);
+          const response = await axios.delete(`/api/chat/${selectedChat._id}`, config);
             message.success(response.data.message, 2);
             onClose(); // Close the modal
             setChats(chats.filter(chat => chat._id !== selectedChat._id)); // Remove chat from state
@@ -154,7 +154,7 @@ const UserDetails = ({ onClose }) => {
                 },
             };
 
-            const response = await axios.delete(`http://localhost:5000/api/chat/group`, {
+            const response = await axios.delete(`/api/chat/group`, {
                 data: { chatId: selectedChat._id },
                 ...config
             });
@@ -178,7 +178,7 @@ const UserDetails = ({ onClose }) => {
             };
 
             const response = await axios.put(
-                `http://localhost:5000/api/chat/group/add`,
+                `/api/chat/group/add`,
                 { userId, chatId: selectedChat._id },
                 config
             );

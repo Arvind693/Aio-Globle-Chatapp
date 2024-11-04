@@ -36,7 +36,7 @@ const UserProfile = ({ onToggle }) => {
             if (newProfileImage instanceof File) {
                 formData.append("profileImage", newProfileImage);
             }
-            const { data } = await axios.put(`http://localhost:5000/api/user/update-user`, formData, config);
+            const { data } = await axios.put(`/api/user/update-user`, formData, config);
 
             if (data.user) {
                 setUser({

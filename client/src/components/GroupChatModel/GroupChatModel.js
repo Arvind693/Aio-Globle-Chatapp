@@ -31,7 +31,7 @@ const ChatGroupModel = ({ closeModel }) => {
                     },
                 };
 
-                const { data } = await axios.get(`http://localhost:5000/api/user/search?q=${search}`, config);
+                const { data } = await axios.get(`/api/user/search?q=${search}`, config);
 
                 setSearchResult(data.data); // Update with search results
                 setLoading(false);
@@ -68,7 +68,7 @@ const ChatGroupModel = ({ closeModel }) => {
             };
 
             const { data } = await axios.post(
-                'http://localhost:5000/api/chat/group',
+                `/api/chat/group`,
                 {
                     name: groupName,
                     users: selectedUsers.map((user) => user._id),

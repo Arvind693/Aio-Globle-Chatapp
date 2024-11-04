@@ -8,7 +8,7 @@ import { ChatState } from '../Context/ChatProvider';
 
 const ChatPage = () => {
   const { user, selectedChat } = ChatState(); // Assuming selectedChat comes from ChatState
-
+  
   return (
     <div>
       {user ? (

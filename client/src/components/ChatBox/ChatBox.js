@@ -8,7 +8,7 @@ import { FaTrash } from 'react-icons/fa';
 import UserDetails from '../UserDetails/UserDetails';
 import ChatTypingLoader from '../ChatTypingLoader/ChatTypingLoader';
 
-const ENDPOINT = "http://localhost:5000";
+const ENDPOINT = `http://localhost:5000`;
 let socket = io(ENDPOINT), selectedChatCompare;
 let typingTimeout;
 
@@ -106,7 +106,7 @@ const ChatBox = () => {
     const fetchMessages = async () => {
       setLoading(true);
       try {
-        const { data } = await axios.get(`http://localhost:5000/api/message/${chatId}`, {
+        const { data } = await axios.get(`/api/message/${chatId}`, {
           headers: { Authorization: `Bearer ${userInfo.token}` }
         });
         setMessages(data);
@@ -152,7 +152,7 @@ const ChatBox = () => {
     setNewMessage('');
 
     try {
-      const { data } = await axios.post(`http://localhost:5000/api/message`, {
+      const { data } = await axios.post(`/api/message`, {
         content: newMessage,
         chatId,
       }, {
@@ -187,7 +187,7 @@ const ChatBox = () => {
 
   const handleDeleteMessage = async (messageId) => {
     try {
-      await axios.delete(`http://localhost:5000/api/message/${messageId}`, {
+      await axios.delete(`/api/message/${messageId}`, {
         headers: { Authorization: `Bearer ${userInfo.token}` }
       });
       socket.emit("message deleted", { messageId, chatId, isSender: true });

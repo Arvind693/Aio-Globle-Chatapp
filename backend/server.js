@@ -10,6 +10,7 @@ const messageRoute = require('./routes/messageRoute');
 const { notFound, errorHandler } = require('./middleware/errorMiddleware');
 const { markAsDelivered, markAsSeen } = require('./controllers/messageController');
 const Message = require('./models/messageModel');
+const path = require('path');
 
 // Initialize express app
 const app = express();
@@ -88,6 +89,14 @@ io.on('connection', (socket) => {
     console.log('A user disconnected:', socket.id);
   });
 });
+
+if (process.env.NODE_ENV === "production") {
+  app.use(express.static(path.join(__dirname, "../client/build")));
+
+  app.get('*', (req, res) => {
+      res.sendFile(path.resolve(__dirname, '../client/build', 'index.html'));
+  })
+}
 
 // Start the server with socket.io
 const PORT = process.env.PORT || 5000;

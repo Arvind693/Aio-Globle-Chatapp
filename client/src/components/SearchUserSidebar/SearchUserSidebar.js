@@ -29,7 +29,7 @@ const SearchUserSidebar = ({ toggleUserSearch }) => {
           },
         };
 
-        const { data } = await axios.get(`http://localhost:5000/api/user/search?q=${search}`, config);
+        const { data } = await axios.get(`/api/user/search?q=${search}`, config);
         setUsers(data.data);
       } catch (err) {
         setError('Failed to fetch users. Please try again later.');
@@ -51,7 +51,7 @@ const SearchUserSidebar = ({ toggleUserSearch }) => {
         },
       };
 
-      const { data } = await axios.post(`http://localhost:5000/api/chat`, { userId }, config);
+      const { data } = await axios.post(`/api/chat`, { userId }, config);
       const chat = data.data;
 
       if (!chats.find((c) => c._id === chat._id)) {
