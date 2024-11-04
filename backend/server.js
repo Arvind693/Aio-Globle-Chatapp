@@ -43,13 +43,7 @@ app.use((req, res, next) => {
 app.use('/api/user', userRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/message', messageRoute);
-// if (process.env.NODE_ENV === "production") {
-//   app.use(express.static(path.join(__dirname, "../client/build")));
 
-//   app.get('*', (req, res) => {
-//       res.sendFile(path.resolve(__dirname, '../client/build', 'index.html'));
-//   })
-// }
 
 
 // --------------------------deployment------------------------------

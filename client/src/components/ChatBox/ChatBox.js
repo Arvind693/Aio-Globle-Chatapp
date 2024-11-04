@@ -8,7 +8,7 @@ import { FaTrash } from 'react-icons/fa';
 import UserDetails from '../UserDetails/UserDetails';
 import ChatTypingLoader from '../ChatTypingLoader/ChatTypingLoader';
 
-const ENDPOINT = `http://localhost:5000`;
+const ENDPOINT = process.env.NODE_ENV === 'production' ? 'https://aio-globel-chatapp.onrender.com' : 'http://localhost:5000';
 let socket = io(ENDPOINT), selectedChatCompare;
 let typingTimeout;
 
