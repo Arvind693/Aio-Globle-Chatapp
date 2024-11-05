@@ -273,9 +273,9 @@ const ChatBox = () => {
         <div ref={messagesEndRef} />
       </div>
   
-      <div>
-        <form onSubmit={sendMessage} className="p-2 md:p-4 bg-transparent flex justify-center mb-4 md:mb-6">
-          <div className="flex items-center w-full max-w-sm md:w-1/2 shadow-lg">
+      <div className=''>
+        <form onSubmit={sendMessage} className="p-4 max-md:p-4 bg-transparent flex justify-center max-md:mb-6">
+          <div className="flex items-center w-full max-w-sm md:w-1/2 shadow-lg max-md:mb-6">
             <input
               type="text"
               value={newMessage}
