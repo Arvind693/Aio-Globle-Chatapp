@@ -5,3 +5,16 @@
 .createGroupBtn{
     background-color:#1eba9b ;
 }
+
+@media (max-width:600px){
+    /* Hide scrollbar in Chrome, Safari, and Opera */
+.scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  
+  /* Hide scrollbar in Firefox */
+  .scrollbar-hide {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+  }
+}

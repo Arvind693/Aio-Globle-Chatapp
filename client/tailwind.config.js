@@ -16,6 +16,12 @@ module.exports = {
         customYellow: '#f7db57',
         customGray:'	#9fb6c3'
       },
+      fontSize: {
+        '6px': '6px',
+        '10px':'10px',
+        '8px':'8px',
+        '12px':'12px'
+      },
     },
   },
   plugins: [

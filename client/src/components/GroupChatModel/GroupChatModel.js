@@ -12,7 +12,7 @@ const ChatGroupModel = ({ closeModel }) => {
     const [search, setSearch] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
-    const {setSelectedChat,setChats} = ChatState();
+    const { setSelectedChat, setChats } = ChatState();
     const userInfo = JSON.parse(localStorage.getItem('userInfo'));
 
     useEffect(() => {
@@ -76,7 +76,7 @@ const ChatGroupModel = ({ closeModel }) => {
                 config
             );
             message.success(`${groupName} group created successfully`, 2);
-            setChats(prevChats=>[...prevChats,data])
+            setChats(prevChats => [...prevChats, data])
             closeModel(); // Close the model after group creation
 
         } catch (error) {
@@ -87,7 +87,7 @@ const ChatGroupModel = ({ closeModel }) => {
     return (
         <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-75 z-[1000]">
             <div className="createGroupContainer rounded-lg shadow-lg p-6 max-w-lg w-full">
-                <h2 className="createGroupText">Create Group Chat</h2>
+                <h2 className="createGroupText ">Create Group Chat</h2>
 
                 <input
                     type="text"
@@ -109,17 +109,23 @@ const ChatGroupModel = ({ closeModel }) => {
                 {loading ? (
                     <div className="text-center">Loading...</div>
                 ) : (search &&
-                    <div className="searchedUserContainer max-h-40 overflow-y-auto mb-4">
-                        {searchResult.map((user) => (
+                    <div className="searchedUserContainer max-h-32 overflow-y-auto mb-4">
+                        {searchResult.map((user, index) => (
                             <div
-                                key={user._id}
+                                key={index}
+                                className="flex items-center p-3 mt-2 max-md:p-1 bg-gray-100 rounded-lg max-md:rounded hover:bg-gray-200 cursor-pointer"
                                 onClick={() => handleAddUser(user)}
-                                className=" searchedResults flex items-center"
                             >
-                                <div className="profileImage"></div>
-                                <div className="nameEmail">
-                                    <p>{user.name}</p>
-                                    <p>{user.email}</p>
+                                <div className="w-12 h-12 max-md:w-6 max-md:h-6 rounded-full overflow-hidden bg-gray-300 mr-3">
+                                    <img
+                                        src={user.profileImage || 'https://icon-library.com/images/anonymous-avatar-icon/anonymous-avatar-icon-25.jpg'}
+                                        alt={user.name}
+                                        className="w-full h-full object-cover"
+                                    />
+                                </div>
+                                <div>
+                                    <p className="text-gray-800 font-medium max-md:text-12px">{user.name}</p>
+                                    <p className="text-gray-500 text-sm max-md:text-8px">{user.email}</p>
                                 </div>
                             </div>
                         ))}
@@ -127,18 +133,24 @@ const ChatGroupModel = ({ closeModel }) => {
                 )}
 
                 {/* Selected users */}
-                <div className="selectedUserContainer mb-4">
+                <div className="selectedUserContainer mb-4 max-h-32 overflow-y-auto">
                     {selectedUsers.map((user) => (
                         <div
                             key={user._id}
                             className=" flex items-center justify-between p-1 mb-2 bg-gray-100 rounded "
                         >   <div className='flex gap-0.4 items-center'>
-                                <div className="profileImage"></div>
-                                <span className='text-gray-800 text-s text-white-500'>{user.name}</span>
+                                <div className="w-12 h-12 max-md:w-6 max-md:h-6 rounded-full overflow-hidden bg-gray-300 mr-3">
+                                    <img
+                                        src={user.profileImage || 'https://icon-library.com/images/anonymous-avatar-icon/anonymous-avatar-icon-25.jpg'}
+                                        alt={user.name}
+                                        className="w-full h-full object-cover"
+                                    />
+                                </div>
+                                <span className='text-gray-800 text-s text-white-500 max-md:text-8px'>{user.name}</span>
                             </div>
                             <button
                                 onClick={() => handleRemoveUser(user)}
-                                className="text-xl text-red-500 hover:underline"
+                                className="text-xl max-md:text-10px text-red-500 hover:underline"
                             >
                                 {<FaWindowClose />}
                             </button>
@@ -146,7 +158,7 @@ const ChatGroupModel = ({ closeModel }) => {
                     ))}
                 </div>
 
-                <div className="flex justify-between">
+                <div className="flex justify-between mb-4">
                     <button
                         onClick={handleCreateGroup}
                         className="createGroupBtn"
@@ -155,7 +167,7 @@ const ChatGroupModel = ({ closeModel }) => {
                     </button>
                     <button
                         onClick={closeModel}
-                        className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
+                        className="bg-gray-500 text-white px-4 py-2 max-md:text-12px max-md:p-2 rounded hover:bg-gray-600"
                     >
                         Cancel
                     </button>

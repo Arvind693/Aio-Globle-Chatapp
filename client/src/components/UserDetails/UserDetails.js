@@ -193,9 +193,9 @@ const UserDetails = ({ onClose }) => {
     };
 
     return (
-        <div className="modal-container">
-            <div className="modal-content w-1/2 bg-white p-6 rounded-lg shadow-lg relative">
-                <button onClick={onClose} className="text-2xl absolute top-2 right-2 text-gray-500"><FaWindowClose /></button>
+        <div className="fixed inset-0 w-screen h-screen bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="modal-content w-1/2 max-md:w-auto bg-white p-6 rounded-lg shadow-lg relative">
+                <button onClick={onClose} className="text-2xl max-md:text-lg absolute top-2 right-2 text-gray-500"><FaWindowClose /></button>
                 <div className="flex flex-col gap-2 items-center space-x-4 mb-4">
                     <img
                         src={chatDetails.profileImage || 'https://icon-library.com/images/anonymous-avatar-icon/anonymous-avatar-icon-25.jpg'}
@@ -276,7 +276,6 @@ const UserDetails = ({ onClose }) => {
                                                 onClick={() => handleAddUser(user._id)}
                                                 className="searchedResults flex items-center"
                                             >
-                                                <div className="profileImage"></div>
                                                 <div className="flex gap-1">
                                                     <img
                                                         className='h-8 w-8 rounded-full object-cover shadow-lg shadow-gray-700'

@@ -48,28 +48,28 @@ const Sidebar = () => {
   };
 
   return (
-    <div className="sidebarMainContainer w-1/4 h-full bg-gray-200 p-4 text-white flex flex-col">
+    <div className="sidebarMainContainer w-1/4 h-full bg-gray-200 p-4 text-white flex flex-col max-md:p-2">
       {/* Header */}
-      <div className="p-4 border-b border-gray-700">
-        <h2 className="text-lg font-semibold text-black">MY Chats</h2>
+      <div className="p-4 border-b border-gray-700 max-md:p-0">
+        <h2 className="text-lg font-semibold text-black max-md:text-10px">MY Chats</h2>
       </div>
 
       {/* Chat List (Scrollable Area) */}
-      <div className="bg-transparent flex-1 overflow-y-auto mt-4">
+      <div className="bg-transparent flex-1 overflow-y-auto scrollbar-hide mt-4 max-md:mt-2">
         {chats.length > 0 ? (
           chats.map((chat, index) => (
             <div
               key={index}
-              className={`p-4 cursor-pointer flex items-center space-x-3 rounded-lg 
-                ${isSelectedChat(chat) ? 'bg-green-500' : 'hover:bg-gray-300'} transition duration-200`}
+              className={` p-4 max-md:p-1 mt-2 cursor-pointer flex max-md:flex-col items-center max-md:gap-0 rounded-lg 
+                ${isSelectedChat(chat) ? 'bg-green-500' :'bg-gray-300'} transition duration-200`}
               onClick={() => handleChatSelect(chat)} // Handle chat selection
             >
               {/* Profile Image with Conditional Styles for Groups and Users */}
               <div className="relative">
                 <div
-                  className={`h-10 w-10 rounded-full border-4 
+                  className={`h-10 w-10 max-md:w-6 max-md:h-6 max-md:border-2 rounded-full border-4 
                   ${isSelectedChat(chat) ? 'border-blue-500' : 'border-green-400'}
-                  overflow-hidden flex items-center justify-center`}
+                  overflow-hidden flex  items-center justify-center`}
                 >
                   {chat?.isGroupChat ? (
                     <div className="h-full w-full bg-blue-200 flex items-center justify-center rounded-full">
@@ -88,11 +88,11 @@ const Sidebar = () => {
               </div>
 
               {/* Chat Name */}
-              <span className="text-black text-lg font-semibold">
+              <p className="text-black text-lg font-semibold  max-md:text-6px max-md:leading-none ">
                 {chat?.isGroupChat
                   ? chat?.chatName
                   : chat?.users?.filter((user) => user._id !== loggedUser?._id)[0]?.name || 'Unknown'}
-              </span>
+              </p>
             </div>
           ))
         ) : (

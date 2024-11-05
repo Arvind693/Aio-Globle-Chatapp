@@ -16,3 +16,13 @@
     overflow: hidden;    
     /* background-color: aqua;         */
   }
+
+  /* @media (max-width: 768px) {
+    .chatPageMainContainer {
+      flex-direction: column;
+    }
+    
+    .sidebarAndChatboxContainer {
+      flex-direction: column;
+    }
+  } */
