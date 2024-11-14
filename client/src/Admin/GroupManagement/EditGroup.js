@@ -5,9 +5,8 @@ import { GrUpdate } from "react-icons/gr";
 import { MdDriveFileRenameOutline } from "react-icons/md";
 import { message } from 'antd';
 import axios from 'axios';
-import './Userdetails.css';
 
-const UserDetails = ({ onClose }) => {
+const EditGroup = ({ onClose }) => {
     const { selectedChat, setSelectedChat, user, chats, setChats } = ChatState();
     const [newGroupName, setNewGroupName] = useState('');
     const [toggleInput, setToggleInput] = useState(false);
@@ -17,11 +16,13 @@ const UserDetails = ({ onClose }) => {
     const [toggleAddUser, setToggleAddUser] = useState(false);
     const [error, setError] = useState('');
 
-    const userInfo = user.role === "Admin" ? JSON.parse(localStorage.getItem('adminInfo')) : JSON.parse(localStorage.getItem('userInfo'));
+    console.log("SelectedChat",selectedChat);
+
+    const adminInfo = JSON.parse(localStorage.getItem('adminInfo'));
 
     useEffect(() => {
         fetchUsers();
-    }, [searchTerm, userInfo.token]);
+    }, [searchTerm, adminInfo.token]);
 
     // Ensure selectedChat and user are not undefined
     if (!selectedChat || !user) {
@@ -39,7 +40,7 @@ const UserDetails = ({ onClose }) => {
         try {
             const config = {
                 headers: {
-                    Authorization: `Bearer ${userInfo.token}`,
+                    Authorization: `Bearer ${adminInfo.token}`,
                 },
             };
 
@@ -55,7 +56,7 @@ const UserDetails = ({ onClose }) => {
     };
 
     // Ensure selectedChat.groupAdmin exists before trying to access _id
-    const isAdmin = selectedChat.isGroupChat && selectedChat.groupAdmin && selectedChat.groupAdmin._id === user._id;
+    const isAdmin = selectedChat.isGroupChat && selectedChat.groupAdmin && selectedChat.groupAdmin._id === adminInfo.user._id;
 
     const chatDetails = selectedChat.isGroupChat
         ? {
@@ -82,7 +83,7 @@ const UserDetails = ({ onClose }) => {
             const config = {
                 headers: {
                     'Content-Type': 'application/json',
-                    Authorization: `Bearer ${userInfo?.token}`,
+                    Authorization: `Bearer ${adminInfo?.token}`,
                 },
             };
             const body = { chatId: selectedChat._id, newGroupName };
@@ -106,7 +107,7 @@ const UserDetails = ({ onClose }) => {
             const config = {
                 headers: {
                     'Content-Type': 'application/json',
-                    Authorization: `Bearer ${userInfo?.token}`,
+                    Authorization: `Bearer ${adminInfo?.token}`,
                 },
             };
 
@@ -130,11 +131,11 @@ const UserDetails = ({ onClose }) => {
             const config = {
                 headers: {
                     'Content-Type': 'application/json',
-                    Authorization: `Bearer ${userInfo?.token}`,
+                    Authorization: `Bearer ${adminInfo?.token}`,
                 },
             };
 
-            const response = await axios.delete(`/api/chat/${selectedChat._id}`, config);
+          const response = await axios.delete(`/api/chat/${selectedChat._id}`, config);
             message.success(response.data.message, 2);
             onClose(); // Close the modal
             setChats(chats.filter(chat => chat._id !== selectedChat._id)); // Remove chat from state
@@ -150,7 +151,7 @@ const UserDetails = ({ onClose }) => {
             const config = {
                 headers: {
                     'Content-Type': 'application/json',
-                    Authorization: `Bearer ${userInfo?.token}`,
+                    Authorization: `Bearer ${adminInfo?.token}`,
                 },
             };
 
@@ -173,7 +174,7 @@ const UserDetails = ({ onClose }) => {
             const config = {
                 headers: {
                     'Content-Type': 'application/json',
-                    Authorization: `Bearer ${userInfo?.token}`,
+                    Authorization: `Bearer ${adminInfo?.token}`,
                 },
             };
 
@@ -223,7 +224,7 @@ const UserDetails = ({ onClose }) => {
                         <p className="mb-2 text-xl text-yellow-600 font-semibold">Group Members:</p>
                         <ul className='h-40 bg-gray-500 rounded mb-2 grid sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-1 justify-center overflow-y-auto p-4'>
                             {selectedChat.users.map((member) => (
-                                <div key={member._id} className="mb-1 flex gap-3 items-center justify-between bg-green-600 rounded-md p-2 overflow-visible">
+                                <div key={member._id} className="mb-1 h-16 flex gap-3 items-center justify-between bg-green-600 rounded-md p-2 overflow-visible">
                                     <div className="flex items-center gap-3">
                                         <img
                                             src={member.profileImage || 'https://icon-library.com/images/anonymous-avatar-icon/anonymous-avatar-icon-25.jpg'}
@@ -248,15 +249,13 @@ const UserDetails = ({ onClose }) => {
                             ))}
                         </ul>
                         {/* Add new user to the group*/}
-                        {isAdmin && (
-                            <div>
-                                <button
-                                    className='bg-green-600 px-2 py-2 rounded text-white'
-                                    onClick={() => setToggleAddUser(!toggleAddUser)}>
-                                    {toggleAddUser ? 'Close' : 'Add User'}
-                                </button>
-                            </div>
-                        )}
+                        <div>
+                            <button
+                                className='bg-green-600 px-2 py-2 rounded text-white'
+                                onClick={() => setToggleAddUser(!toggleAddUser)}>
+                                {toggleAddUser ? 'Close' : 'Add User'}
+                            </button>
+                        </div>
                         {isAdmin && toggleAddUser && (
                             <div className="mt-4 space-y-2">
                                 <input
@@ -320,4 +319,4 @@ const UserDetails = ({ onClose }) => {
     );
 };
 
-export default UserDetails;
+export default EditGroup;

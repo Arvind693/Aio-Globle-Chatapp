@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import LoginSignUp from '../components/LoginSignup/LoginSignup';
-import WelcomePage from '../components/WelcomePage/WelcomePage';
+
 
 
 const HomePage = () => {

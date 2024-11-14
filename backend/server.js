@@ -4,11 +4,12 @@ const cors = require('cors');
 const { Server } = require('socket.io');
 const dbConnect = require('./config/dbConnect');
 require('dotenv').config();
+const adminRoutes = require('./routes/adminRoutes');
 const userRoutes = require('./routes/userRoutes');
 const chatRoutes = require('./routes/chatRoutes');
 const messageRoute = require('./routes/messageRoute');
+const autoResponseRoute = require('./routes/autoResponseRoutes');
 const { notFound, errorHandler } = require('./middleware/errorMiddleware');
-const { markAsDelivered, markAsSeen } = require('./controllers/messageController');
 const Message = require('./models/messageModel');
 const path = require('path');
 
@@ -40,9 +41,11 @@ app.use((req, res, next) => {
 });
 
 // Use the router for API routes
+app.use('/api/admin',adminRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/message', messageRoute);
+app.use('/api/auto-responses',autoResponseRoute);
 
 
 
@@ -104,7 +107,14 @@ io.on('connection', (socket) => {
       console.error('Error marking message as seen:', error);
     }
   });
-  
+  socket.on("start screen share", ({ userId, stream }) => {
+    socket.broadcast.emit("screen sharing started", { userId, stream });
+  });
+
+  socket.on("stop screen share", ({ userId }) => {
+    socket.broadcast.emit("screen sharing stopped", { userId });
+  });
+
   socket.on('disconnect', () => {
     console.log('A user disconnected:', socket.id);
   });

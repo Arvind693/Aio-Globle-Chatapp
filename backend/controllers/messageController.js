@@ -2,12 +2,13 @@ const Message = require('../models/messageModel');
 const User = require('../models/userModel');
 const Chat = require('../models/chatModel');
 const { Error } = require('mongoose');
+const cloudinary = require('../config/cloudinary');
 
 // Get all messages
 const allMessages = async (req, res) => {
   try {
     const messages = await Message.find({ chat: req.params.chatId })
-      .populate("sender", "name profileImage email")
+      .populate("sender", "name profileImage userName")
       .populate("chat");
 
     if (!messages) {
@@ -23,18 +24,23 @@ const allMessages = async (req, res) => {
 
 
 const sendMessage = async (req, res) => {
-  const { content, chatId } = req.body;
+  const { chatId, content } = req.body; // Extract content and chatId from the request body
+  const uploadedFile = req.file ? req.file.path : null;
 
-  // Check for required fields
-  if (!content || !chatId) {
-    console.log("Invalid data passed into request");
-    return res.status(400).json({ message: "Invalid data passed into request" });
+  // Validate required fields
+  if (!chatId) {
+    return res.status(400).json({ message: "Chat ID is required" });
+  }
+
+  if (!content && !uploadedFile) {
+    return res.status(400).json({ message: "Message content or file is required" });
   }
 
   const newMessage = {
     sender: req.user._id,
     content,
     chat: chatId,
+    file: uploadedFile,
   };
 
   try {
@@ -73,7 +79,6 @@ const sendMessage = async (req, res) => {
     res.status(500).json({ message: "Failed to send message", error });
   }
 };
-
 const deleteMessage = async (req, res) => {
   const messageId = req.params.id;
   const userId = req.user._id; // ID of the authenticated user
@@ -85,6 +90,10 @@ const deleteMessage = async (req, res) => {
     // Check if the message exists
     if (!message) {
       return res.status(404).json({ message: 'Message not found' });
+    }
+    if (message.file) {
+      const publicId = message.file.split('/').pop().split('.')[0];
+      await cloudinary.uploader.destroy(`aio-globel_messages_files/${publicId}`);
     }
 
     // Full deletion if the user is the sender
@@ -229,7 +238,6 @@ const markAsSeen = async (req, res) => {
     res.status(500).json({ message: "Failed to mark message as seen", error });
   }
 };
-
 
 
 module.exports = { allMessages, sendMessage, deleteMessage, deleteMultipleMessages, markAsDelivered, markAsSeen };

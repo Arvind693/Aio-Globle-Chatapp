@@ -1,25 +1,48 @@
 const mongoose = require('mongoose');
 
 const userSchema = new mongoose.Schema({
-  name:{type:String, required:true} , 
-  email: {type: String,required: true, unique:true},
-  password: {type: String,required: true,},
-  profileImage: {
-    type: String, 
-    default: 'https://icon-library.com/images/anonymous-avatar-icon/anonymous-avatar-icon-25.jpg',
-  },
-  canMessage: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User', // Users this user is allowed to message (set by admin)
-    },
-  ],
+    name: { type: String, required: true },
+    userName: { type: String, required: true, unique: true },
+    password: { type: String, required: true },
+    role: { type: String, default: 'User' },
 
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
+    // Profile image
+    profileImage: {
+        type: String,
+        default: 'https://icon-library.com/images/anonymous-avatar-icon/anonymous-avatar-icon-25.jpg',
+    },
+
+    // Allowed contacts for direct messaging, set by Admin
+    allowedContacts: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'User'
+        }
+    ],
+
+    // Permissions assigned by Admin
+    permissions: {
+        canMessage: { type: Boolean, default: false },
+        canGroupChat: { type: Boolean, default: false },
+        canScreenShare: { type: Boolean, default: false },
+        canCall: { type: Boolean, default: false }
+    },
+
+    // Chat-related data
+    chatHistory: [{
+        sender: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+        message: { type: String },
+        timestamp: { type: Date, default: Date.now }
+    }],
+
+    // Group-related settings
+    groupId: { type: mongoose.Schema.Types.ObjectId, ref: 'Group', default: null },
+
+    // Timestamp
+    createdAt: {
+        type: Date,
+        default: Date.now
+    }
 });
 
-// Export the model
 module.exports = mongoose.model('User', userSchema);

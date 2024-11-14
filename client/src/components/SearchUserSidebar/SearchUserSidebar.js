@@ -80,7 +80,7 @@ const SearchUserSidebar = ({ toggleUserSearch }) => {
         <div className="mt-4 flex items-center">
           <input
             type="text"
-            placeholder="Search by name or email"
+            placeholder="Search by name or userName"
             className="text-green-600 flex-grow p-2 border-2 border-green-600 rounded-l-lg focus:outline-none focus:text-green-600 max-md:text-12px"
             onChange={(e) => setSearch(e.target.value)}
             value={search}
@@ -109,7 +109,7 @@ const SearchUserSidebar = ({ toggleUserSearch }) => {
                 </div>
                 <div>
                   <p className="text-gray-800 font-medium max-md:text-12px">{user.name}</p>
-                  <p className="text-gray-500 text-sm max-md:text-8px">{user.email}</p>
+                  <p className="text-gray-500 text-sm max-md:text-8px">{user.userName}</p>
                 </div>
               </div>
             ))

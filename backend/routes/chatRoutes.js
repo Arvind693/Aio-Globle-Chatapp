@@ -8,7 +8,8 @@ const { fetchAllChats,
     addToGroup,
     removeFromGroup,
     deleteGroup,
-    deleteChat
+    deleteChat,
+    initializeAdminChats
 } = require('../controllers/chatController');
 const User = require('../models/userModel');
 const protect = require('../middleware/authMiddleware');
@@ -17,6 +18,7 @@ const protect = require('../middleware/authMiddleware');
 router.get('/user-chats/:userId', fetchAllChats);
 router.post('/', protect, accessChat);
 router.get('/', protect, fetchChats);
+router.post('/initialize-admin-chats', protect, initializeAdminChats);
 router.post('/group', protect, groupChat);
 router.put('/rename-group', protect, renameGroup);
 router.put('/group/add', protect, addToGroup);

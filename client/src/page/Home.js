@@ -1,9 +1,19 @@
 import React from 'react';
-import logo from '../../Assets/images/aio-globel2.png';
-import LoginSignUp from '../LoginSignup/LoginSignup';
+import logo from '../Assets/images/aio-globel2.png';
+import { useNavigate } from 'react-router-dom';
 
 
-const WelcomePage = () => {
+const Home = () => {
+    const navigate = useNavigate();
+
+    const goAdminDashboard = ()=>{
+        navigate('/admin-login&signup')
+    }
+
+    const goUserDashboard =()=>{
+        navigate('/user-login&signup')
+    }
+
   return (
         <div className="flex w-full flex-col items-center justify-center h-screen bg-gradient-to-r from-purple-500 via-blue-500 to-indigo-500 text-white">
           {/* Welcome Title */}
@@ -21,12 +31,20 @@ const WelcomePage = () => {
           </p>
 
           {/* Call to Action */}
+          <div className='flex gap-4'>
           <button
+            onClick={goAdminDashboard}
             className="px-6 py-2 bg-yellow-300 max-md:px-2 max-md:py-1 max-md:text-12px text-black font-semibold rounded-full hover:bg-yellow-400 transition duration-300">
-            Get Started With Tab On a Chat
+            Continue As Admin
           </button>
+          <button
+            onClick={goUserDashboard}
+            className="px-6 py-2 bg-yellow-300 max-md:px-2 max-md:py-1 max-md:text-12px text-black font-semibold rounded-full hover:bg-yellow-400 transition duration-300">
+            Continue As User
+          </button>
+          </div>
         </div>
   );
 };
 
-export default WelcomePage;
+export default Home;

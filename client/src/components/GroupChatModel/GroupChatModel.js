@@ -125,7 +125,7 @@ const ChatGroupModel = ({ closeModel }) => {
                                 </div>
                                 <div>
                                     <p className="text-gray-800 font-medium max-md:text-12px">{user.name}</p>
-                                    <p className="text-gray-500 text-sm max-md:text-8px">{user.email}</p>
+                                    <p className="text-gray-500 text-sm max-md:text-8px">{user.userName}</p>
                                 </div>
                             </div>
                         ))}

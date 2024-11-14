@@ -5,16 +5,17 @@ import ChatBox from '../components/ChatBox/ChatBox';
 import WelcomePage from '../components/WelcomePage/WelcomePage'; // Import WelcomePage
 import './ChatPage.css';
 import { ChatState } from '../Context/ChatProvider';
+import AdminNavbar from '../Admin/AdminNavbar/AdminNavbar';
 
 const ChatPage = () => {
-  const { user, selectedChat } = ChatState(); // Assuming selectedChat comes from ChatState
+  const { user, selectedChat } = ChatState();
   
   return (
     <div>
       {user ? (
         <div className="chatPageMainContainer">
           <div>
-            <Navbar />
+            {user.role==="Admin" ?<AdminNavbar/>: <Navbar />}
           </div>
           <div className="sidebarAndChatboxContainer flex">
             <Sidebar />

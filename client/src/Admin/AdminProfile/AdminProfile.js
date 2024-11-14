@@ -1,15 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { FaEdit, FaWindowClose } from "react-icons/fa";
 import { FiLogOut } from "react-icons/fi";
-import { MdEmail } from "react-icons/md";
+import { FaUser } from "react-icons/fa";
 import { useNavigate } from 'react-router-dom';
 import { ChatState } from '../../Context/ChatProvider';
 import axios from 'axios';
 import { message, Spin } from 'antd';
 
-const UserProfile = ({ onToggle }) => {
-    const { user, setUser, logout } = ChatState();
-    const userInfo = JSON.parse(localStorage.getItem('userInfo'));
+const AdminProfile = ({ onToggle }) => {
+    const { user, setUser, adminLogout } = ChatState();
+    const adminInfo = JSON.parse(localStorage.getItem('adminInfo'));
 
     const [newName, setNewName] = useState('');
     const [newProfileImage, setNewProfileImage] = useState(user?.profileImage);
@@ -20,11 +20,11 @@ const UserProfile = ({ onToggle }) => {
     const handleUpdateProfile = async () => {
         try {
             setLoading(true);
-            if (!userInfo) throw new Error("User info not available.");
+            if (!adminInfo) throw new Error("Admin info not available.");
 
             const config = {
                 headers: {
-                    Authorization: `Bearer ${userInfo.token}`,
+                    Authorization: `Bearer ${adminInfo.token}`,
                     'Content-Type': 'multipart/form-data',
                 },
             };
@@ -46,15 +46,15 @@ const UserProfile = ({ onToggle }) => {
                 });
 
                 // Update user info in local storage
-                const updatedUserInfo = {
-                    ...userInfo,
+                const updatedadminInfo = {
+                    ...adminInfo,
                     user: {
-                        ...userInfo.user,
+                        ...adminInfo.user,
                         name: data.user.name,
                         profileImage: data.user.profileImage,
                     },
                 };
-                localStorage.setItem('userInfo', JSON.stringify(updatedUserInfo));
+                localStorage.setItem('adminInfo', JSON.stringify(updatedadminInfo));
             }
 
             message.success(data.message, 2);
@@ -78,7 +78,7 @@ const UserProfile = ({ onToggle }) => {
     }, [user]);
 
     const handleLogout = () => {
-        logout();
+        adminLogout();
         navigate('/');
     };
 
@@ -148,7 +148,7 @@ const UserProfile = ({ onToggle }) => {
                         </div>
                     )}
                     <p className="mb-2 flex items-center gap-2 transition-colors duration-300 hover:text-yellow-400">
-                        <MdEmail /> <span>{user.userName}</span>
+                        <FaUser /> <span>{user.userName}</span>
                     </p>
                     <p
                         onClick={handleLogout}
@@ -162,4 +162,4 @@ const UserProfile = ({ onToggle }) => {
     );
 };
 
-export default UserProfile;
+export default AdminProfile;

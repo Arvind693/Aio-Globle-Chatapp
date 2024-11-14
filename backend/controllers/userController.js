@@ -5,84 +5,96 @@ const Chat = require('../models/chatModel');
 const cloudinary = require('../config/cloudinary');
 
 
-// User registration Routes
+// Register User or Admin
 const registerUser = async (req, res) => {
+    const { name, userName, password } = req.body;
 
-    const { name, email, password } = req.body;
-
-    if (!name || !email || !password) {
+    // Check required fields
+    if (!name || !userName || !password) {
         return res.status(400).send({
             success: false,
             message: "Please fill all the fields",
-        })
-    };
-
-    const existUser = await User.findOne({ email });
-    if (existUser) {
-        return res.status(400).send({
-            success: false,
-            message: "User already exist"
-        })
+        });
     }
 
     try {
-        // Hash password
-        const hashedPassword = await bcrypt.hash(password, 10);
-
-        // Create new user
-        const user = await User.create({
-            name,
-            email,
-            password: hashedPassword,
-            profileImage: req.file ? req.file.path : ''
-        })
-        // generate jwt token for user
-        const token = generateToken(user._id);
-
-        if (user) {
-            res.status(201).send(
-                {
-                    success: true,
-                    message: 'User registered successfully 🥰',
-                    data: {
-                        id: user._id,
-                        name: user.name,
-                        email: user.email,
-                        profileImage: user.profileImage
-                    },
-                    token: token
-                }
-            );
+        // Check if the userName already exists
+        const existUser = await User.findOne({ userName });
+        if (existUser) {
+            return res.status(400).send({
+                success: false,
+                message: "User already exists"
+            });
         }
 
+        // Hash the password
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+
+        // Register as regular User with default permissions (limited features)
+        let user = await User.create({
+            name,
+            userName,
+            password: hashedPassword,
+            role: "User",
+            permissions: {
+                canMessage: false,
+                canGroupChat: false,
+                canScreenShare: false,
+                canCall: false
+            },
+            profileImage: req.file ? req.file.path : ''
+        });
+
+        // Generate JWT token for the registered user
+        const token = generateToken(user._id);
+
+        // Send response
+        res.status(201).send({
+            success: true,
+            message: `User registered successfully 🥰`,
+            data: {
+                id: user._id,
+                name: user.name,
+                userName: user.userName,
+                role: user.role,
+                profileImage: user.profileImage,
+                permissions: user.permissions // Admin permissions structure for user
+            },
+            token: token
+        });
     } catch (error) {
         res.status(500).send({
             success: false,
-            message: "Error adding user",
-            error: error.message  // Send a more descriptive error message
+            message: "Error registering user",
+            error: error.message
         });
     }
 };
 
 
-// User login route
+// User login controller
 const loginUser = async (req, res) => {
-    const { email, password } = req.body;
+    const { userName, password,role } = req.body;
 
-    // Validate if email and password are provided
-    if (!email || !password) {
+    // Validate if userName and password are provided
+    if (!userName || !password) {
         return res.status(400).json({
             success: false,
-            message: "Please provide both email and password!"
+            message: "Please provide both userName and password!"
         });
     }
 
     try {
-        const user = await User.findOne({ email });
+        const user = await User.findOne({ userName });
+
         if (!user) {
             return res.send({ message: "This user is not exist " })
         }
 
+        if(role!==user.role){
+            return res.send({message:"You are not a user"})
+        }
         if (user && await bcrypt.compare(password, user.password)) {
             const token = generateToken(user._id);
             res.status(200).json({
@@ -93,7 +105,7 @@ const loginUser = async (req, res) => {
         } else {
             res.status(201).json({
                 success: false,
-                message: "Invalid email or password 😥"
+                message: "Invalid userName or password 😥"
             });
         }
     } catch (error) {
@@ -118,11 +130,11 @@ const searchUsers = async (req, res) => {
     }
 
     try {
-        // Find users by name or email (case insensitive)
+        // Find users by name or userName (case insensitive)
         const users = await User.find({
             $or: [
                 { name: { $regex: searchQuery, $options: 'i' } },
-                { email: { $regex: searchQuery, $options: 'i' } }
+                { userName: { $regex: searchQuery, $options: 'i' } }
             ],
             _id: { $ne: req.user._id },  // Exclude the current logged-in user from search results
         });
@@ -202,8 +214,8 @@ const updateUserProfile = async (req, res) => {
         const { name } = req.body;
         const profileImage = req.file ? req.file.path : '';
 
-        if(!name){
-            return res.status(400).json({message:"New user name not found "})
+        if (!name) {
+            return res.status(400).json({ message: "New user name not found " })
         }
 
         // Find the user by ID (req.user.id should be set by your authentication middleware)
@@ -224,21 +236,50 @@ const updateUserProfile = async (req, res) => {
         user.profileImage = profileImage || user.profileImage;
 
         const updatedUser = await user.save();
-        
+
         res.json({
             user: {
                 _id: updatedUser._id,
                 name: updatedUser.name,
-                email: updatedUser.email,
+                userName: updatedUser.userName,
                 profileImage: updatedUser.profileImage,
             },
             message: "User profile updated successfully",
         });
+
     } catch (error) {
         console.error("Error updating profile:", error);
         res.status(500).json({ message: "An error occurred while updating the profile" });
     }
 };
 
+// Fetch user's permissions
+const fetchUserPermissions = async (req, res) => {
+    const userId = req.params.id; // Extract user ID from request parameters
 
-module.exports = { registerUser, loginUser, searchUsers, createChat, updateUserProfile };
+    try {
+        // Find the user by ID and select only the permissions field
+        const user = await User.findById(userId).select('permissions');
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        // Send the permissions data back to the client
+        res.status(200).json({ permissions: user.permissions });
+    } catch (error) {
+        console.error('Error fetching user permissions:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
+
+
+module.exports = {
+    registerUser,
+    loginUser,
+    searchUsers,
+    createChat,
+    updateUserProfile,
+    fetchUserPermissions
+};

@@ -14,13 +14,22 @@ module.exports = {
       },
       colors: {
         customYellow: '#f7db57',
-        customGray:'	#9fb6c3'
+        customGray: '	#9fb6c3'
       },
       fontSize: {
         '6px': '6px',
-        '10px':'10px',
-        '8px':'8px',
-        '12px':'12px'
+        '10px': '10px',
+        '8px': '8px',
+        '12px': '12px'
+      },
+      keyframes: {
+        flash: {
+          '0%, 80%, 100%': { opacity: 0 },
+          '40%': { opacity: 1 },
+        },
+      },
+      animation: {
+        flash: 'flash 1.2s infinite',
       },
     },
   },

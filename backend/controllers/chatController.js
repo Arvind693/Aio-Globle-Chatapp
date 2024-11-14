@@ -57,7 +57,7 @@ const accessChat = async (req, res) => {
     // Populate latest message sender's details
     chat = await User.populate(chat, {
       path: 'latestMessage.sender',
-      select: 'name email',
+      select: 'name userName',
     });
 
     if (chat) {
@@ -98,28 +98,68 @@ const fetchChats = async (req, res) => {
   try {
     // Find all chats where the current user is a participant
     Chat.find({ users: { $elemMatch: { $eq: req.user._id } } })
-      .populate("users", "-password")  // Exclude password from user data
-      .populate("groupAdmin", "-password")  // Exclude password from groupAdmin data
+      .populate("users", "-password")  
+      .populate("groupAdmin", "-password")  
       .populate("latestMessage")
-      .sort({ updatedAt: -1 })  // Sort by latest updated chat
+      .sort({ updatedAt: -1 })  
       .then(async (results) => {
-        // Populate the sender details in the latest message
         results = await User.populate(results, {
           path: "latestMessage.sender",
-          select: "name profileImage email",
+          select: "name profileImage userName",
         });
-
-        // Send the fetched chat results back to the client
         res.status(200).send(results);
       });
   } catch (error) {
-    // Handle any errors that occurred during fetching chats
     console.error(error);
     res.status(400).send({ error: "Error at one-on-one chat" });
   }
 };
 
-// controller to create a group chat
+const initializeAdminChats = async (req, res) => {
+  try {
+    const adminId = req.user._id; 
+    const userRole = req.user.role;
+    if(!adminId || !userRole){
+      console.log("User Id Not foumd")
+    }
+
+    // Only proceed if the user is an admin
+    if (userRole !== 'Admin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Only admins can initialize chats with all users'
+      });
+    }
+
+    // Fetch all users except the admin
+    const users = await User.find({ _id: { $ne: adminId } });
+
+    for (const user of users) {
+      // Check if a chat already exists between admin and the user
+      const existingChat = await Chat.findOne({
+        users: { $all: [adminId, user._id] }
+      });
+
+      if (!existingChat) {
+        // If no chat exists, create a new chat with admin and user
+        const newChat = new Chat({
+          users: [adminId, user._id],
+          isGroupChat: false
+        });
+        await newChat.save();
+      }
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Default chats initialized for admin with all users'
+    });
+  } catch (error) {
+    console.log("Chat ctrating failed")
+    res.status(500).json({ success: false, message: 'Error initializing chats', error: error.message });
+  }
+};
+
 const groupChat = async (req, res) => {
   try {
     const { name, users } = req.body;
@@ -128,12 +168,10 @@ const groupChat = async (req, res) => {
       return res.status(400).json({ message: "Please provide all required fields." });
     }
 
-    // Ensure users is an array
     if (!Array.isArray(users)) {
       return res.status(400).json({ message: "Users should be an array of user IDs." });
     }
 
-    // Add current user to the group
     users.push(req.user._id);
 
     const chat = await Chat.create({
@@ -185,9 +223,7 @@ const renameGroup = async (req, res) => {
 
 // controller to add a user to the group chat
 const addToGroup = async (req, res) => {
-  const { chatId, userId } = req.body;  // Extract chatId and userId from request body
-
-  // Validate the input
+  const { chatId, userId } = req.body;  
   if (!chatId || !userId) {
     return res.status(400).json({
       success: false,
@@ -196,7 +232,6 @@ const addToGroup = async (req, res) => {
   }
 
   try {
-    // Find the chat by its ID and ensure it's a group chat
     const chat = await Chat.findById(chatId);
 
     if (!chat) {
@@ -205,16 +240,12 @@ const addToGroup = async (req, res) => {
         message: 'Chat not found',
       });
     }
-
-    // Check if the user is already part of the group
     if (chat.users.includes(userId)) {
       return res.status(400).json({
         success: false,
         message: 'User is already in the group',
       });
     }
-
-    // Add the user to the group chat
     chat.users.push(userId);
 
     // Save the updated chat document
@@ -241,7 +272,7 @@ const addToGroup = async (req, res) => {
 };
 
 const removeFromGroup = async (req, res) => {
-  const { chatId, userId } = req.body;  // Extract chatId and userId from request body
+  const { chatId, userId } = req.body;  
 
   // Validate the input
   if (!chatId || !userId) {
@@ -349,6 +380,7 @@ module.exports = {
   fetchAllChats,
   accessChat,
   fetchChats,
+  initializeAdminChats,
   groupChat,
   renameGroup,
   addToGroup,
