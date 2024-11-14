@@ -14,7 +14,7 @@ import UserDetails from '../UserDetails/UserDetails';
 import ScreenShare from '../../Admin/ScreenShare/ScreenShare';
 import { FaCrown } from "react-icons/fa";
 
-const ENDPOINT = process.env.NODE_ENV === 'production' ? 'https://aio-globel-chatapp.onrender.com' : 'http://localhost:5000';
+const ENDPOINT = process.env.NODE_ENV === 'production' ? 'https://aio-globle-chatapp.onrender.com' : 'http://localhost:5000';
 let socket = io(ENDPOINT), selectedChatCompare;
 let typingTimeout;
 
