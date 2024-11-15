@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { RiDeleteBin5Fill } from "react-icons/ri";
 
 const AllowedContact = ({ userId, contactId, onRemove }) => {
     const [contact, setContact] = useState(null);
@@ -29,13 +30,13 @@ const AllowedContact = ({ userId, contactId, onRemove }) => {
     if (!contact) return null; // Render nothing if contact data is not yet loaded
 
     return (
-        <div className="flex items-center bg-gray-100 p-2 rounded mb-1">
-            <span className="text-sm font-medium">{contact.name}</span>
+        <div className="flex items-center bg-gray-300 p-2 rounded mb-1">
+            <span className="text-10px font-medium text-gray-700">{contact.name}</span>
             <button
                 onClick={() => onRemove(userId, contact._id)} // Pass userId and contactId to onRemove
                 className="ml-2 text-red-500 hover:text-red-700"
             >
-                Remove
+                <RiDeleteBin5Fill size={18} className='text-red-700'/>
             </button>
         </div>
     );

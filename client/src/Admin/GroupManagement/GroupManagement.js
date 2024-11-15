@@ -10,8 +10,6 @@ const GroupManagement = () => {
     const { selectedChat, setSelectedChat, user } = ChatState();
     const [groups, setGroups] = useState([]);
     const [users, setUsers] = useState([]);
-    const [selectedGroup, setSelectedGroup] = useState('');
-    const [selectedUser, setSelectedUser] = useState('');
     const [selectedUsers, setSelectedUsers] = useState([]);
     const [isCreateGroupModalOpen, setIsCreateGroupModalOpen] = useState(false);
     const [newGroupName, setNewGroupName] = useState('');
@@ -118,62 +116,27 @@ const GroupManagement = () => {
     return (
         <div className="min-h-screen bg-gray-100">
             <AdminNavbar />
-
-            <div className='flex justify-between  p-4 mr-2 sm:mr-10'>
-                <div className="p-2 sm:p-8 mb-8 flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-4">
-                    {/* Group Selection and User Selection */}
-                    <select
-                        onChange={(e) => setSelectedGroup(e.target.value)}
-                        value={selectedGroup}
-                        className="p-2 w-full sm:w-auto border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
-                    >
-                        <option value="" disabled>Select Group</option>
-                        {groups.map(group => (
-                            <option key={group._id} value={group._id}>{group.chatName}</option>
-                        ))}
-                    </select>
-                    <select
-                        onChange={(e) => setSelectedUser(e.target.value)}
-                        value={selectedUser}
-                        className="p-2 w-full sm:w-auto border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
-                    >
-                        <option value="" disabled>Select User</option>
-                        {users.map(user => (
-                            <option key={user._id} value={user._id}>{user.name}</option>
-                        ))}
-                    </select>
-
-                    {/* Add User Button */}
-                    <button
-                        onClick={handleAddUser}
-                        className="px-4 py-2 w-full sm:w-auto bg-green-600 text-white rounded font-semibold hover:bg-green-700 transition duration-200"
-                    >
-                        Add User to Group
-                    </button>
-                </div>
-                {/* Create new group button */}
-                <div className="mb-6 flex justify-between">
-                    <button
-                        onClick={() => setIsCreateGroupModalOpen(true)}
-                        className="bg-green-600 h-12 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200"
-                    >
-                        Create New Group
-                    </button>
-                </div>
-            </div>
+            <button
+                onClick={() => setIsCreateGroupModalOpen(true)}
+                className="bg-green-600 h-12 max-md:h-8 hover:bg-green-700 text-white max-md:text-xs max-md:py-2 max-md:px-2 ml-2 mt-2 font-semibold py-2 px-4 rounded transition-colors duration-200"
+            >
+                Create Group
+            </button>
 
             {/* Group List */}
             <div className='w-full p-8 flex flex-col items-center'>
-                <h4 className="text-2xl font-semibold text-gray-700 mb-6">Groups</h4>
+                <div className='w-full flex justify-center border-b-2 border-green-500'>
+                    <h4 className="text-2xl max-md:text-lg font-semibold text-gray-700 mb-2">Groups</h4>
+                </div>
 
-                <div className="w-full max-w-3xl space-y-4">
+                <div className="w-full max-w-3xl space-y-2 max-md:space-y-1 mt-2">
                     {groups.map(group => (
                         <div
                             key={group._id}
                             onClick={() => { setEditGroupModelOpen(true); setSelectedChat(group); }}
-                            className="bg-white shadow-md rounded-lg p-6 cursor-pointer transition-transform duration-300 hover:shadow-xl hover:scale-105"
+                            className=" bg-gradient-to-r from-gray-800 to-blue-600  shadow-md rounded-lg p-2 cursor-pointer transition-transform duration-300 hover:shadow-xl hover:scale-105"
                         >
-                            <h5 className="text-lg font-semibold text-gray-800">{group.chatName}</h5>
+                            <h5 className="text-xs text-white font-semibold">{group.chatName}</h5>
                         </div>
                     ))}
                 </div>

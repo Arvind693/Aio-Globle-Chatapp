@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { message, Spin } from 'antd';
 import AdminNavbar from '../AdminNavbar/AdminNavbar';
+import { CiEdit } from "react-icons/ci";
+import { MdDelete } from "react-icons/md";
 
 const AutoResponseManagement = () => {
     const [autoResponses, setAutoResponses] = useState([]);
@@ -78,8 +80,8 @@ const AutoResponseManagement = () => {
             <div>
                 <AdminNavbar />
             </div>
-            <div className='max-w-3xl mx-auto bg-gray-100 rounded-lg shadow-md mt-4'>
-                <form onSubmit={handleSubmit} className="space-y-4 mb-6 bg-white p-4 rounded shadow">
+            <div className='max-w-3xl mx-auto  rounded-lg  mt-4 flex flex-col  items-center'>
+                <form onSubmit={handleSubmit} className="space-y-4 mb-6 bg-gray-200 p-4 rounded shadow max-md:w-72">
                     <input
                         type="text"
                         name="trigger"
@@ -87,7 +89,7 @@ const AutoResponseManagement = () => {
                         value={formData.trigger}
                         onChange={handleChange}
                         required
-                        className="w-full p-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
+                        className="w-full max-md:text-xs p-2 border-2 border-green-500 rounded focus:outline-none"
                     />
                     <input
                         type="text"
@@ -96,10 +98,10 @@ const AutoResponseManagement = () => {
                         value={formData.response}
                         onChange={handleChange}
                         required
-                        className="w-full p-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
+                        className="w-full max-md:text-xs p-2 border-2 border-green-500 rounded focus:outline-none"
                     />
                     <div className="flex items-center space-x-4">
-                        <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+                        <button type="submit" className="px-4 py-2 max-md:text-xs bg-gradient-to-t from-green-500 to-green-600 bg-blue-600 text-white rounded hover:bg-blue-700">
                             {loading? <Spin size='small'/> : editingId ? 'Update' : 'Add'} Auto Response
                         </button>
                         {editingId && (
@@ -117,33 +119,33 @@ const AutoResponseManagement = () => {
                     </div>
                 </form>
 
-                <div className="bg-white p-4 rounded shadow">
-                    <h4 className="text-xl font-semibold text-gray-700 mb-3">Existing Auto Responses</h4>
+                <div className="bg-gray-200 p-4 rounded shadow max-md:w-72">
+                    <h4 className="text-xl max-md:text-xs font-semibold text-gray-700 mb-3">Existing Auto Responses</h4>
                     <table className="min-w-full bg-white">
                         <thead>
                             <tr className="w-full border-b text-left">
-                                <th className="py-2 px-4">Trigger</th>
-                                <th className="py-2 px-4">Response</th>
-                                <th className="py-2 px-4">Actions</th>
+                                <th className="py-2 px-4 max-md:text-10px">Trigger</th>
+                                <th className="py-2 px-4 max-md:text-10px">Response</th>
+                                <th className="py-2 px-4 max-md:text-10px">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             {autoResponses.map((ar) => (
                                 <tr key={ar._id} className="border-b hover:bg-gray-100">
-                                    <td className="py-2 px-4">{ar.trigger}</td>
-                                    <td className="py-2 px-4">{ar.response}</td>
+                                    <td className="py-2 px-4 max-md:text-8px">{ar.trigger}</td>
+                                    <td className="py-2 px-4 max-md:text-8px">{ar.response}</td>
                                     <td className="py-2 px-4 space-x-2">
                                         <button
                                             onClick={() => handleEdit(ar)}
                                             className="px-3 py-1 text-blue-600 border rounded hover:bg-blue-50"
                                         >
-                                            Edit
+                                            <CiEdit className='text-lg max-md:text-xs text-green-500'/>
                                         </button>
                                         <button
                                             onClick={() => handleDelete(ar._id)}
                                             className="px-3 py-1 text-red-600 border rounded hover:bg-red-50"
                                         >
-                                            Delete
+                                           <MdDelete className='text-lg max-md:text-xs text-red-700'/>
                                         </button>
                                     </td>
                                 </tr>

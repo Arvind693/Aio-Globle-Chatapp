@@ -106,8 +106,8 @@ const Sidebar = () => {
                     )}
                   </div>
                   {chat?.isGroupChat ? null : isAdminUser(chat) && (
-                    <span className="absolute bottom-10 right-0 bg-yellow-500 text-white text-xs px-2 py-1 rounded-full">
-                      <FaCrown />
+                    <span className="absolute bottom-10 right-0 max-md:bottom-3 max-md:left-0 bg-yellow-500 max-md:bg-transparent max-md:text-yellow-500 text-white text-xs px-2 py-1 rounded-full">
+                      <FaCrown className='max-md:text-xs max-md:bg-transparent'/>
                     </span>
                   )}
                 </div>

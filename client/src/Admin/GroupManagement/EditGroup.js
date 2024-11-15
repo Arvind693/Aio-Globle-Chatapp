@@ -3,8 +3,10 @@ import { ChatState } from '../../Context/ChatProvider';
 import { FaWindowClose } from "react-icons/fa";
 import { GrUpdate } from "react-icons/gr";
 import { MdDriveFileRenameOutline } from "react-icons/md";
-import { message } from 'antd';
+import { RiDeleteBin5Fill } from "react-icons/ri";
+import { message, Spin } from 'antd';
 import axios from 'axios';
+import { FaCrown } from "react-icons/fa";
 
 const EditGroup = ({ onClose }) => {
     const { selectedChat, setSelectedChat, user, chats, setChats } = ChatState();
@@ -16,7 +18,7 @@ const EditGroup = ({ onClose }) => {
     const [toggleAddUser, setToggleAddUser] = useState(false);
     const [error, setError] = useState('');
 
-    console.log("SelectedChat",selectedChat);
+    console.log("SelectedChat", selectedChat);
 
     const adminInfo = JSON.parse(localStorage.getItem('adminInfo'));
 
@@ -135,7 +137,7 @@ const EditGroup = ({ onClose }) => {
                 },
             };
 
-          const response = await axios.delete(`/api/chat/${selectedChat._id}`, config);
+            const response = await axios.delete(`/api/chat/${selectedChat._id}`, config);
             message.success(response.data.message, 2);
             onClose(); // Close the modal
             setChats(chats.filter(chat => chat._id !== selectedChat._id)); // Remove chat from state
@@ -201,47 +203,59 @@ const EditGroup = ({ onClose }) => {
                     <img
                         src={chatDetails.profileImage || 'https://icon-library.com/images/anonymous-avatar-icon/anonymous-avatar-icon-25.jpg'}
                         alt="Profile"
-                        className="h-16 w-16 rounded-full object-cover shadow-lg shadow-gray-700"
+                        className="h-10 w-10 max-md:h-8 max-sm:w-8 rounded-full object-cover shadow-lg shadow-gray-700"
                     />
-                    <div className='flex flex-col gap-1 items-center justify-center'>
+                    <div className='flex  gap-1 items-center justify-center'>
                         <h2 className="text-lg text-green-600 font-semibold">{chatDetails.name}</h2>
                         <h2 className="text-lg text-green-600 font-semibold">{chatDetails.userName}</h2>
 
                         {isAdmin && (
-                            <p className='text-2xl' onClick={() => setToggleInput(!toggleInput)}>{<MdDriveFileRenameOutline />}</p>
+                            <p className='text-2xl cursor-pointer' onClick={() => setToggleInput(!toggleInput)}>{<MdDriveFileRenameOutline />}</p>
                         )}
                     </div>
                     {toggleInput && (
-                        <div>
-                            <input type="text" placeholder='New Group Name' onChange={(e) => setNewGroupName(e.target.value)} />
-                            <button onClick={handleRename}>{<GrUpdate />}</button>
+                        <div className="flex items-center gap-1  sm:p-4 w-full max-w-sm sm:max-w-md mx-auto">
+                            <input
+                                type="text"
+                                placeholder="New Group Name"
+                                onChange={(e) => setNewGroupName(e.target.value)}
+                                className="w-full px-3 py-1 max-md:px-1 max-md:py-0 text-sm max-md:text-10px border-2 border-green-500 rounded outline-none
+                                            transition duration-200"
+                            />
+                            <button
+                                onClick={handleRename}
+                                className="p-2 max-md:p-1 bg-green-500 text-white rounded hover:bg-green-600 transition-colors duration-200"
+                            >
+                                <GrUpdate size={18} className="max-md:w-4 max-md:h-4" />
+                            </button>
                         </div>
+
                     )}
                 </div>
 
                 {chatDetails.type === 'Group' && (
                     <div>
-                        <p className="mb-2 text-xl text-yellow-600 font-semibold">Group Members:</p>
+                        <p className="mb-2 text-lg max-md:text-10px text-yellow-600 font-semibold">Group Members:</p>
                         <ul className='h-40 bg-gray-500 rounded mb-2 grid sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-1 justify-center overflow-y-auto p-4'>
                             {selectedChat.users.map((member) => (
-                                <div key={member._id} className="mb-1 h-16 flex gap-3 items-center justify-between bg-green-600 rounded-md p-2 overflow-visible">
+                                <div key={member._id} className="mb-1 h-12 max-md:h-8 flex gap-3 items-center justify-between bg-green-600 rounded-md p-2 overflow-visible">
                                     <div className="flex items-center gap-3">
                                         <img
                                             src={member.profileImage || 'https://icon-library.com/images/anonymous-avatar-icon/anonymous-avatar-icon-25.jpg'}
                                             alt="Profile"
-                                            className="h-8 w-8 rounded-full object-cover shadow-lg shadow-gray-700"
+                                            className="h-6 w-6 max-md:h-4 max-md:w-4 rounded-full object-cover shadow-lg shadow-gray-700"
                                         />
-                                        <p className='text-white whitespace-normal'>{member.name}</p>
+                                        <p className='text-white text-12px max-md:text-10px whitespace-normal'>{member.name}</p>
                                         {selectedChat.groupAdmin._id === member._id && (
-                                            <span className="relative top-0 right-0 left-5 bottom-7 text-xs text-white bg-black p-1 rounded ml-2">Admin</span>
+                                            <span className="top-0 right-0 left-5 bottom-7 text-xs text-white bg-yellow-500 p-1 rounded ml-2"><FaCrown /></span>
                                         )}
                                     </div>
                                     {isAdmin && member._id !== user._id && (
                                         <button
                                             onClick={() => handleRemoveUser(member._id)}
-                                            className="text-2xl text-red-600 hover:text-red-700"
+                                            className=" text-gray-700 hover:text-red-500 "
                                         >
-                                            <FaWindowClose />
+                                            <RiDeleteBin5Fill size={16} className='text-red-700' />
                                         </button>
                                     )}
                                 </div>
@@ -251,24 +265,25 @@ const EditGroup = ({ onClose }) => {
                         {/* Add new user to the group*/}
                         <div>
                             <button
-                                className='bg-green-600 px-2 py-2 rounded text-white'
+                                className='bg-green-600 px-2 py-2 flex items-center rounded text-white text-sm max-md:text-10px max-md:h-5 '
                                 onClick={() => setToggleAddUser(!toggleAddUser)}>
                                 {toggleAddUser ? 'Close' : 'Add User'}
                             </button>
                         </div>
                         {isAdmin && toggleAddUser && (
-                            <div className="mt-4 space-y-2">
+                            <div className="mt-2 space-y-2">
                                 <input
                                     type="text"
                                     placeholder="Search user by name or userName"
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
-                                    className="p-2 rounded-md border w-full"
+                                    className="w-1/2 px-3 py-1  max-md:px-1 max-md:py-0 text-sm max-md:text-10px border-2 border-green-500 rounded outline-none
+                                            transition duration-200"
                                 />
 
                                 {/* Show search results */}
                                 {loading ? (
-                                    <div className="text-center">Loading...</div>
+                                    <div className="text-center"><Spin className='custom-spin'/></div> 
                                 ) : (searchTerm &&
                                     <div className="searchedUserContainer bg-gray-500 max-h-40 overflow-y-auto mb-4">
                                         {searchResults.map((user) => (
@@ -279,9 +294,9 @@ const EditGroup = ({ onClose }) => {
                                             >
                                                 <div className="flex gap-1">
                                                     <img
-                                                        className='h-8 w-8 rounded-full object-cover shadow-lg shadow-gray-700'
-                                                        src={user.profileImage} alt="" />
-                                                    <p className='text-white'>{user.name}</p>
+                                                        className='h-6 w-6 max-md:h-4 max-md:w-4 rounded-full object-cover shadow-lg shadow-gray-700"'
+                                                        src={user.profileImage || 'https://icon-library.com/images/anonymous-avatar-icon/anonymous-avatar-icon-25.jpg'} alt="" />
+                                                    <p className='text-white text-12px max-md:text-10px whitespace-normal'>{user.name}</p>
                                                 </div>
                                             </div>
                                         ))}
@@ -295,7 +310,7 @@ const EditGroup = ({ onClose }) => {
                                 <div className='mt-4'>
                                     <button
                                         onClick={handleDeleteGroup}
-                                        className='bg-red-400 p-2 rounded text-white font-medium'>
+                                        className='bg-red-400 px-2 py-2 flex items-center rounded text-white text-sm max-md:text-10px max-md:h-5'>
                                         Delete Group
                                     </button>
                                 </div>
@@ -309,7 +324,7 @@ const EditGroup = ({ onClose }) => {
                     <div className='mt-4'>
                         <button
                             onClick={handleDeleteChat}
-                            className='bg-red-400 p-2 rounded text-white font-medium'>
+                            className='bg-red-400 px-2 py-2 flex items-center rounded text-white text-sm max-md:text-10px max-md:h-5'>
                             Delete Chat
                         </button>
                     </div>

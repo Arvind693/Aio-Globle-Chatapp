@@ -49,6 +49,9 @@
     grid-template-columns: 1fr 1fr;
     gap: 5px;
 }
+.custom-spin .ant-spin-dot-item {
+    background-color: #22c55e; /* Tailwind green-500 hex color */
+}
 
 @media (max-width:600px){
     .createGroupText{

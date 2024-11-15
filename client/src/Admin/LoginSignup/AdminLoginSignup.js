@@ -89,25 +89,23 @@ const AdminLoginSignUp = () => {
 
   return (
     <div className="w-full h-screen bg-gradient-to-r from-purple-500 via-blue-500 to-indigo-500 overflow-hidden max-md:px-2">
-      <p className="text-3xl max-md:text-xl text-yellow-300 font-bold mt-4 w-full flex justify-center">
-        {isSignUp ? 'Join as Admin' : 'Welcome back Admin'}
-      </p>
-      <div className="flex max-md:flex-col items-center justify-center gap-10 h-full">
-        <div className="flex flex-col items-center justify-center h-full bg-transparent text-white text-center">
+
+      <div className="flex max-md:flex-col items-center justify-center max-md:justify-start gap-10 max-md:gap-0 h-full max-md:h-auto max-md:mt-1">
+        <div className="flex flex-col items-center justify-center h-full max-md:h-auto bg-transparent text-white text-center">
           {/* Welcome Title */}
-          <h1 className="text-4xl max-md:text-2xl font-bold mb-4 max-md:mb-2 drop-shadow-lg">
+          <h1 className="text-4xl max-md:text-lg font-bold mb-4 max-md:mb-2 drop-shadow-lg">
             Welcome to <span className="text-yellow-300">AIO-GLOBEL Admin Portal</span>
           </h1>
-  
+
           <div className="drop-shadow-lg w-40 max-md:w-20 flex justify-center">
             <img src={logo} alt="Logo" />
           </div>
-  
+
           {/* Tagline */}
           <p className="text-lg max-md:text-xs max-md:leading-5 text-center max-w-lg mb-6 max-md:mb-4 drop-shadow-lg">
             Your central control for managing users, groups, and automated responses. Connect, monitor, and ensure a seamless communication experience across AIO-GLOBEL’s global platform.
           </p>
-  
+
           {/* Call to Action */}
           <button
             className="px-6 py-2 max-md:hidden max-md:px-2 max-md:py-1 text-sm bg-yellow-300 text-black font-semibold rounded-full hover:bg-yellow-400 transition duration-300"
@@ -115,15 +113,15 @@ const AdminLoginSignUp = () => {
             Begin Your Admin Session With SignIn/SignUp
           </button>
         </div>
-  
+
         {/* Login/SignUp form */}
-        <div className="bg-white p-6 max-md:p-4 rounded-lg shadow-2xl w-96 max-md:w-full max-md:mb-2">
+        <div className="bg-white p-6 max-md:p-4 rounded-lg shadow-2xl w-96 max-md:w-72 max-md:mb-2">
           <h2 className="text-2xl max-md:text-lg border-b border-gray-400 font-bold text-center mb-4">
             {isSignUp ? 'Sign Up' : 'Sign In'}
           </h2>
-  
+
           {error && <p className="text-red-600 text-center mb-4">{error}</p>}
-  
+
           <form onSubmit={handleSubmit} className="space-y-4 max-md:space-y-2">
             {isSignUp && (
               <div>
@@ -141,7 +139,7 @@ const AdminLoginSignUp = () => {
                 />
               </div>
             )}
-  
+
             <div>
               <label htmlFor="userName" className="block text-sm font-medium text-gray-700">
                 Username
@@ -156,7 +154,7 @@ const AdminLoginSignUp = () => {
                 className="text-xs max-md:p-2 p-2 block w-full border border-gray-300 rounded-md shadow-sm"
               />
             </div>
-  
+
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700">
                 Password
@@ -171,7 +169,7 @@ const AdminLoginSignUp = () => {
                 className="text-xs max-md:p-2 p-2 block w-full border border-gray-300 rounded-md shadow-sm"
               />
             </div>
-  
+
             {isSignUp && (
               <div>
                 <label htmlFor="profileImage" className="block text-sm font-medium text-gray-700">
@@ -185,7 +183,7 @@ const AdminLoginSignUp = () => {
                 />
               </div>
             )}
-  
+
             <div>
               <button
                 type="submit"
@@ -199,7 +197,7 @@ const AdminLoginSignUp = () => {
                 )}
               </button>
             </div>
-  
+
             <div className="text-center mt-4">
               {isSignUp ? (
                 <p className="text-xs">
@@ -222,7 +220,7 @@ const AdminLoginSignUp = () => {
       </div>
     </div>
   );
-  
+
 };
 
 export default AdminLoginSignUp;

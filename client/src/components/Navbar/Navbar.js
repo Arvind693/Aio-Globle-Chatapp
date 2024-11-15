@@ -34,27 +34,27 @@ const Navbar = () => {
             <div className="container mx-auto flex justify-between items-center">
 
                 {/* Logo/Brand Name */}
-                <div className="text-white text-xl font-bold flex items-center gap-3 w-24 max-sm:w-10">
+                <div className="text-white text-xl font-bold flex items-center gap-3 w-24 max-sm:w-12">
                     <img src={logo1} alt="AIO-Globel Logo" />
                 </div>
 
                 <div className='flex gap-20 max-sm:gap-4'>
-                    {/* Search Bar Button */}
+                    {/* get instant response Button */}
                     <button
                         onClick={handleToggleAutoResponseSidebar}
-                        className="flex items-center px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-500 text-white font-semibold rounded-full shadow-lg hover:from-blue-700 hover:to-blue-600 transition duration-300 ease-in-out"
+                        className="max-md:text-8px max-md:rounded flex items-center px-4 py-2 max-md:px-2 max-md:py-1 bg-gradient-to-r from-blue-600 to-blue-500 text-white font-semibold rounded-full shadow-lg hover:from-blue-700 hover:to-blue-600 transition duration-300 ease-in-out"
                     >
-                        <FontAwesomeIcon icon={faRobot} className="mr-2 text-lg" /> {/* Icon */}
-                        Get Instant Assistant
+                        <FontAwesomeIcon icon={faRobot} className="mr-2 text-lg max-md:text-xs" /> {/* Icon */}
+                        Get Assistant
                     </button>
                     {isSidebarOpen && <SearchUserSidebar toggleUserSearch={toggleUserSearch} />}
 
                     {/* Create Group Button */}
-                    <div className="flex items-center px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-500 text-white font-semibold rounded-full shadow-lg hover:from-blue-700 hover:to-blue-600 transition duration-300 ease-in-out"
+                    <div className=" max-md:text-xs max-md:rounded flex gap-1 items-center px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-500 text-white font-semibold rounded-full shadow-lg hover:from-blue-700 hover:to-blue-600 transition duration-300 ease-in-out"
                         // onClick={() => setShowGroupModel(true)}
                     >
-                        <h1 className='text-2xl text-gray-900'><MdGroups /></h1>
-                        <p className='max-md:hidden'>comming soon..</p>
+                        <h1 className='text-2xl text-gray-900 max-md:text-xs'><MdGroups className='text-white max-md:text-xs'/></h1>
+                        <p className='max-md:text-8px'>comming soon..</p>
                         {/* <p className='md:hidden'>Create Group</p> */}
                     </div>
                     {showGroupModel && <ChatGroupModel closeModel={() => setShowGroupModel(false)} />}

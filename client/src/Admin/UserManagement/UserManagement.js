@@ -7,7 +7,6 @@ import AdminNavbar from '../AdminNavbar/AdminNavbar';
 
 const UserManagement = () => {
     const [users, setUsers] = useState([]);
-    const [toggleAddUser, setToggleAddUser] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const [searchResults, setSearchResults] = useState([]);
     const [allowedContactsNames, setAllowedContactsNames] = useState([]);
@@ -70,34 +69,6 @@ const UserManagement = () => {
 
         searchUsers();
     }, [searchTerm]);
-
-    // Add New User to Allowed Contacts Functionality
-    const handleAddUser = async (userId) => {
-        try {
-            const config = {
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${adminInfo?.token}`,
-                },
-            };
-
-            // Fetch user data from the backend
-            const response = await axios.get(`/api/admin/getuser/${userId}`, config);
-            const { name, _id } = response.data;
-            setAllowedContactsNames((prevNames) => {
-                if (!prevNames.includes(name)) {
-                    return [...prevNames, name];
-                }
-                return prevNames;
-            });
-            setFormData((prevFormData) => ({
-                ...prevFormData,
-                allowedContacts: [...prevFormData.allowedContacts, response.data._id],
-            }));
-        } catch (error) {
-            message.error('Failed to add user to the group', 2);
-        }
-    };
 
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
@@ -171,16 +142,16 @@ const UserManagement = () => {
             {/* User Registration Form */}
             <form
                 onSubmit={handleRegister}
-                className="bg-white shadow-lg rounded-lg p-6 mb-10 mt-2 max-w-lg mx-auto border border-gray-200 transition-transform duration-200 hover:shadow-2xl"
+                className="bg-white shadow-lg rounded-lg p-6 mb-10 mt-2 max-w-lg mx-auto max-md:w-72 border border-gray-200 transition-transform duration-200 hover:shadow-2xl"
             >
-                <h4 className="text-2xl font-semibold text-gray-700 mb-4">Register New User</h4>
+                <h4 className="text-xl max-md:text-sm font-semibold text-gray-700 mb-4">Register New User</h4>
                 <input
                     type="text"
                     name="name"
                     placeholder="Full Name"
                     value={formData.name}
                     onChange={handleChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded mb-4 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    className="w-full px-2 py-1 border-2 text-sm max-md:text-12px  border-green-500 rounded mb-4 max-md:mb-2 outline-none focus:outline-none "
                     required
                 />
                 <input
@@ -189,7 +160,7 @@ const UserManagement = () => {
                     placeholder="Username"
                     value={formData.userName}
                     onChange={handleChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded mb-4 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    className="w-full px-2 py-1 border-2 text-sm max-md:text-12px border-green-500 rounded mb-4 max-md:mb-2 outline-none focus:outline-none "
                     required
                 />
                 <input
@@ -198,16 +169,16 @@ const UserManagement = () => {
                     placeholder="Password"
                     value={formData.password}
                     onChange={handleChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded mb-4 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    className="w-full px-2 py-1 border-2 text-sm max-md:text-12px border-green-500 rounded mb-4 max-md:mb-2 outline-none focus:outline-none "
                     required
                 />
 
                 {/* Permissions Section */}
                 <div className="mb-4">
-                    <label className="text-gray-800 font-semibold mb-2 block">Set Permissions:</label>
-                    <div className="grid grid-cols-2 gap-4">
+                    <label className="text-gray-800 max-md:text-sm font-semibold mb-2 block">Set Permissions:</label>
+                    <div className="grid grid-cols-2 gap-4 max-md:gap-2">
                         {Object.keys(formData.permissions).map((permission) => (
-                            <label key={permission} className="inline-flex items-center text-sm">
+                            <label key={permission} className="inline-flex items-center text-sm max-md:text-10px">
                                 <input
                                     type="checkbox"
                                     name={permission}
@@ -222,7 +193,7 @@ const UserManagement = () => {
                 </div>
                 <button
                     type="submit"
-                    className="w-full py-2 mt-4 bg-green-600 text-white rounded font-semibold hover:bg-blue-700 transition duration-200"
+                    className="w-full py-2 mt-4 max-md:text-xs bg-green-600 text-white rounded font-semibold hover:bg-blue-700 transition duration-200"
                 >
                     {loading? <Spin size='small'/>: "Register User"}
                 </button>

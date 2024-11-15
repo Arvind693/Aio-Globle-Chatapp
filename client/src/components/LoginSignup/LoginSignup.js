@@ -52,8 +52,8 @@ const Login = () => {
   };
 
   return (
-    <div className="flex w-full max-md:flex-col max-md:mb-2 items-center justify-center h-screen bg-gradient-to-r from-purple-500 via-blue-500 to-indigo-500">
-      <div className="flex flex-col items-center justify-center h-full bg-transparent text-white">
+    <div className="flex w-full max-md:flex-col max-md:mb-2 items-center justify-center max-md:justify-start  h-screen bg-gradient-to-r from-purple-500 via-blue-500 to-indigo-500">
+      <div className="flex flex-col items-center justify-center h-full max-md:w-80 max-md:h-auto max-md:mt-5 bg-transparent text-white">
         <h1 className="text-4xl max-md:text-lg font-bold mb-4 max-md:mb-0 drop-shadow-lg">
           Welcome to <span className="text-yellow-300">AIO-GLOBEL</span>
         </h1>
@@ -70,9 +70,9 @@ const Login = () => {
           className="px-6 py-2 max-md:hidden max-md:px-2 max-md:py-1 max-md:text-12px max-md:rounded-lg bg-yellow-300 text-black font-semibold rounded-full hover:bg-yellow-400 transition duration-300">
           Get Started With Sign In
         </button>
-      </div>
+      </div>  
 
-      <div className="bg-white p-6 max-md:p-2 rounded-lg shadow-2xl w-96 max-md:w-auto max-md:mb-2">
+      <div className="bg-white p-6 max-md:p-2 rounded-lg shadow-2xl w-96 max-md:w-72 max-md:mt-8 max-md:mb-2">
         <h2 className="text-2xl max-md:text-12px border-b border-b-gray-400 font-bold text-center mb-4">
           Sign In
         </h2>

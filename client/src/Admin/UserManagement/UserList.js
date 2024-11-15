@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'; 
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { message } from 'antd';
 import AllowedContact from './AllowedContact';
@@ -82,23 +82,25 @@ const UserList = ({ users, setUsers, fetchUsers }) => {
 
     return (
         <div className='bg-transparent'>
-            <div className="w-full flex justify-center items-center bg-gradient-to-r from-gray-500 to-gray-600 py-2 shadow-lg rounded-lg mb-8">
-                <p className="text-3xl font-bold text-white tracking-wide font-sans">Registered Users List</p>
+            <div className="w-full flex justify-center items-center  bg-gradient-to-r from-gray-800 to-blue-600 shadow-lg rounded mb-8">
+                <p className="text-lg font-bold text-white tracking-wide font-sans">Registered Users List</p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {users.map((user) => (
                     <div key={user._id} className="bg-gray-50 p-4 rounded-lg shadow-md">
                         <div className="flex items-center justify-between">
-                            <img src={user.profileImage} alt={user.name} className="h-12 w-12 rounded-full" />
-                            <h5 className="text-lg font-semibold">{user.name}</h5>
+                            <img src={user.profileImage || 'https://icon-library.com/images/anonymous-avatar-icon/anonymous-avatar-icon-25.jpg'}
+                                alt={user.name} className="h-8 w-8 rounded-full" />
+                            <h5 className="text-sm font-semibold">{user.name}</h5>
                         </div>
                         <div className="mt-4">
-                            <h6 className="font-medium text-gray-700">Permissions:</h6>
+                            <h6 className="font-medium text-sm text-gray-700">Permissions:</h6>
                             <div className="flex flex-col space-y-2 mt-2">
                                 {Object.keys(user.permissions).map((perm) => (
                                     <div key={perm} className="flex items-center">
                                         <input
                                             type="checkbox"
+                                            className='cursor-pointer'
                                             checked={
                                                 selectedPermissions[user._id]?.[perm] ?? false
                                             }
@@ -106,21 +108,22 @@ const UserList = ({ users, setUsers, fetchUsers }) => {
                                                 handlePermissionChange(user._id, perm, e.target.checked)
                                             }
                                         />
-                                        <label className="ml-2">{perm}</label>
+                                        <label className="ml-2 text-10px">{perm}</label>
                                     </div>
                                 ))}
                             </div>
                             <button
                                 onClick={() => handleSavePermissions(user._id)}
-                                className="mt-2 bg-blue-500 text-white px-4 py-2 rounded"
-                                disabled={!isSaveButtonEnabled[user._id]} // Disable if no checkbox has been changed
+                                className={`mt-2 text-xs text-white px-2 py-1 rounded ${isSaveButtonEnabled[user._id] ? 'bg-blue-500 hover:bg-blue-600' : 'bg-blue-300 cursor-not-allowed'} 
+                                transition-colors duration-200`}
+                                disabled={!isSaveButtonEnabled[user._id]}
                             >
                                 Save Permissions
                             </button>
-                        </div>
+                        </div> 
 
                         <div className="mt-4">
-                            <h6 className="font-medium text-gray-700">Allowed Contacts</h6>
+                            <h6 className="font-medium text-sm text-gray-700">Allowed Contacts</h6>
                             <div className="flex flex-wrap space-x-2 mt-2">
                                 {user.allowedContacts?.length > 0 ? (
                                     user.allowedContacts.map((contactId) => (
@@ -138,7 +141,7 @@ const UserList = ({ users, setUsers, fetchUsers }) => {
 
                             <button
                                 onClick={() => showAddContactPopup(user._id)}
-                                className="mt-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition duration-200"
+                                className="mt-2 px-2 py-1 text-12px bg-green-500 text-white rounded hover:bg-green-600 transition duration-200"
                             >
                                 Add Allowed Contact
                             </button>
