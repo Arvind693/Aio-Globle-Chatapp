@@ -10,7 +10,7 @@ const AdminNavbar = () => {
     const navigate = useNavigate();
     const location = useLocation();  // Get the current path
     const [isNavbarOpen, setNavbarOpen] = useState(false);
-    const [toggleProfile,setToggleProfile] = useState(false);
+    const [toggleProfile, setToggleProfile] = useState(false);
 
     const user = JSON.parse(localStorage.getItem('adminInfo')).user;
 
@@ -19,7 +19,7 @@ const AdminNavbar = () => {
         navigate('/');
     };
 
-    const handleToggleProfile = ()=>{
+    const handleToggleProfile = () => {
         setToggleProfile(!toggleProfile);
     }
     const menuItems = [
@@ -34,10 +34,10 @@ const AdminNavbar = () => {
             <header className="bg-gradient-to-r from-white via-pink-400 to-purple-600 text-white py-4 px-6 flex items-center justify-between shadow-md sticky top-0 w-full z-50">
                 <div className="flex items-center tracking-wider cursor-pointer" onClick={() => navigate('/admin_dashboard')}>
                     {/* Logo/Brand Name */}
-                    <div className="text-white text-xl font-bold flex items-center gap-3 w-24 max-sm:w-10">
+                    <div className="text-white text-xs font-bold flex items-center gap-3 w-24 max-sm:w-10">
                         <img src={logo1} alt="AIO-Globel Logo" />
                     </div>
-                    <span className='text-lg font-semibold text-gray-700'>Admin Dashboard</span>
+                    <span className='text-sm font-semibold text-gray-700'>Admin Dashboard</span>
                 </div>
 
                 {/* Desktop Navigation */}
@@ -46,7 +46,7 @@ const AdminNavbar = () => {
                         <button
                             key={item.key}
                             onClick={() => navigate(item.path)}
-                            className={`text-lg ${location.pathname === item.path ? 'text-yellow-300 font-semibold underline' : 'text-white'} hover:text-yellow-400`}
+                            className={`text-sm ${location.pathname === item.path ? 'text-yellow-300 font-semibold underline' : 'text-white'} hover:text-yellow-400`}
                         >
                             {item.icon} {item.label}
                         </button>
@@ -94,9 +94,25 @@ const AdminNavbar = () => {
                             {item.icon} {item.label}
                         </button>
                     ))}
-                    <button onClick={handleLogout} className="w-full text-left text-lg hover:bg-blue-600 p-2 rounded">
-                        <LogoutOutlined /> Logout
-                    </button>
+                    <div className="flex items-center space-x-4 cursor-pointer" onClick={handleToggleProfile} >
+                        <div className="text-white font-semibold max-sm:hidden">{user.name}</div>
+
+                        {/* Profile Image with Hover Effect */}
+                        <div className="relative w-10 h-10 max-sm:w-5 max-sm:h-5 rounded-full bg-gray-500 flex items-center justify-center text-white font-bold hover:scale-110 transition-transform duration-300">
+                            {user.profileImage ? (
+                                <img
+                                    src={user.profileImage}
+                                    alt="User Profile"
+                                    className="w-full h-full object-cover rounded-full"
+                                />
+                            ) : (
+                                <span>{user.name[0]}</span>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* User Profile Dropdown */}
+                    {toggleProfile && (<AdminProfile onToggle={handleToggleProfile} />)}
                 </nav>
             )}
         </div>
