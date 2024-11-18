@@ -19,18 +19,17 @@ const ChatProvider = ({ children }) => {
       if (adminInfo) {
         setUser(adminInfo.user);
         if (location.pathname === '/') {
-          navigate('/admin_dashboard');  // Redirect to dashboard if on root path
+          navigate('/admin_dashboard');  
         }
       } else if (userInfo) {
         setUser(userInfo.user);
       } else if (location.pathname === '/admin_dashboard') {
-        // Redirect to login if trying to access the dashboard without adminInfo
         navigate('/admin_login');  
       }
     };
 
     fetchUserFromLocalStorage();
-  }, [location, navigate]); // Depend on location to track route changes
+  }, [location, navigate]); 
 
   // Logout function
   const logout = () => {
@@ -38,7 +37,7 @@ const ChatProvider = ({ children }) => {
     setChats([]);
     setUser(null); 
     setSelectedChat(null);
-    navigate('/');  // Redirect to home/login page after logout
+    navigate('/'); 
   };
 
   const adminLogout = () => {
@@ -46,15 +45,7 @@ const ChatProvider = ({ children }) => {
     setChats([]);
     setUser(null); 
     setSelectedChat(null);
-    navigate('/admin_login');  // Redirect to admin login page after logout
-  };
-
-  const userLogout = () => {
-    localStorage.removeItem('userInfo');
-    setChats([]);
-    setUser(null); 
-    setSelectedChat(null);
-    navigate('/');  // Redirect to home/login page after logout
+    navigate('/admin_login'); 
   };
 
   return (
@@ -69,7 +60,7 @@ const ChatProvider = ({ children }) => {
         chats,
         setChats,
         adminLogout,
-        logout  // Expose the logout function
+        logout  
       }}
     >
       {children}

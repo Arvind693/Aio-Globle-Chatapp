@@ -4,13 +4,14 @@ import { message, Spin } from 'antd';
 import './LoginSignup.css';
 import { useNavigate } from 'react-router-dom';
 import logo from '../../Assets/images/aio-globel2.png';
-import Loader from '../Loader/Loader';
+import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 
 const Login = () => {
   const [userName, setUserName] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState(null);
   const [loader, setLoader] = useState(false);
+  const [showPassword,setShowPassword]= useState(false);
   const navigate = useNavigate();
 
   // Function to validate userName format
@@ -70,7 +71,7 @@ const Login = () => {
           className="px-6 py-2 max-md:hidden max-md:px-2 max-md:py-1 max-md:text-12px max-md:rounded-lg bg-yellow-300 text-black font-semibold rounded-full hover:bg-yellow-400 transition duration-300">
           Get Started With Sign In
         </button>
-      </div>  
+      </div>
 
       <div className="bg-white p-6 max-md:p-2 rounded-lg shadow-2xl w-96 max-md:w-72 max-md:mt-8 max-md:mb-2">
         <h2 className="text-2xl max-md:text-12px border-b border-b-gray-400 font-bold text-center mb-4">
@@ -82,7 +83,7 @@ const Login = () => {
         <form onSubmit={handleSubmit} className="space-y-4 max-md:space-x-1">
           <div>
             <label htmlFor="userName" className="block text-sm max-md:hidden font-medium text-gray-700">
-              userName
+              Username
             </label>
             <input
               type="text"
@@ -96,18 +97,27 @@ const Login = () => {
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-sm max-md:hidden font-medium text-gray-700">
+            <label htmlFor="password" className="block text-sm font-medium text-gray-700">
               Password
             </label>
-            <input
-              type="password"
-              id="password"
-              value={password}
-              placeholder='Enter password'
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              className="max-md:text-10px max-md:p-1 mt-1 p-2 block w-full border border-gray-300 rounded-md shadow-sm"
-            />
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                id="password"
+                value={password}
+                placeholder="Create password"
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                className="text-xs max-md:p-2 p-2 block w-full border border-gray-300 rounded-md shadow-sm pr-10"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500"
+              >
+                {showPassword ? <AiOutlineEyeInvisible size={20} /> : <AiOutlineEye size={20} />}
+              </button>
+            </div>
           </div>
 
           <div>
@@ -116,7 +126,7 @@ const Login = () => {
               className="max-md:text-10px max-md:p-1 w-full py-2 px-4 rounded-md bg-blue-600 text-white hover:bg-blue-700 transition duration-300"
               disabled={loader}
             >
-              {loader ? <Spin size='small'/> : 'Sign In'}
+              {loader ? <Spin size='small' /> : 'Sign In'}
             </button>
           </div>
         </form>

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'; 
+import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import './UsersSideBar.css';
 import { ChatState } from '../../../Context/ChatProvider';
@@ -6,8 +6,8 @@ import { FaCrown } from "react-icons/fa";
 
 const Sidebar = () => {
   const [loggedUser, setLoggedUser] = useState(null);
-  const { selectedChat, setSelectedChat, chats, setChats, user } = ChatState();
-  const [loading, setLoading] = useState(true); // Initialize with `true` for initial load
+  const { selectedChat, setSelectedChat, chats, setChats, user, notification, setNotification } = ChatState();
+  const [loading, setLoading] = useState(true);
 
   // Determine the user role and retrieve appropriate user info
   const userInfo = user?.role === 'Admin'
@@ -20,15 +20,15 @@ const Sidebar = () => {
     try {
       const config = {
         headers: {
-          authorization: `Bearer ${userInfo?.token}`, // Ensure correct token format
+          authorization: `Bearer ${userInfo?.token}`,
         },
       };
       const { data } = await axios.get('/api/chat', config);
-      setChats(data); // Set the chats after fetching
+      setChats(data);
     } catch (error) {
       console.error('Error fetching chats:', error);
     } finally {
-      setLoading(false); // Stop loading after the request completes
+      setLoading(false);
     }
   };
 
@@ -38,10 +38,26 @@ const Sidebar = () => {
       : JSON.parse(localStorage.getItem('userInfo'));
     setLoggedUser(storedUserInfo?.user);
     fetchChats();
-  }, []); // Fetch chats only once on component mount
+  }, []);
 
-  const handleChatSelect = (chat) => {
+  const handleChatSelect = async (chat) => {
     setSelectedChat(chat);
+    try {
+      const config = {
+        headers: {
+          authorization: `Bearer ${userInfo?.token}`,
+        },
+      };
+
+      await axios.delete(`/api/message/delete-notification/${chat._id}`, config);
+
+      // Optionally, update the notification state if you want to remove it locally
+      setNotification((prevNotifications) =>
+        prevNotifications.filter((n) => n.chat._id !== chat._id)
+      );
+    } catch (error) {
+      console.error("Error deleting notifications:", error);
+    }
   };
 
   const getProfileImage = (chat) => {
@@ -58,6 +74,18 @@ const Sidebar = () => {
   };
 
   const isSelectedChat = (chat) => selectedChat?._id === chat?._id;
+
+  // Function to get the notification count for a specific chat
+  const getNotificationCount = (chat) => {
+    // Filter notifications where the sender is one of the chat users (excluding the logged-in user)
+    const otherUserIds = chat.users
+      .filter((u) => u._id !== loggedUser?._id)
+      .map((u) => u._id);
+
+    // Count notifications where the sender is in the list of chat users
+    const count = notification.filter((n) => otherUserIds.includes(n.sender._id)).length;
+    return count;
+  };
 
   return (
     <div className="sidebarMainContainer w-1/4 h-full bg-gray-200 p-4 text-white flex flex-col max-md:p-2">
@@ -84,7 +112,14 @@ const Sidebar = () => {
                     ${isSelectedChat(chat) ? 'bg-green-500' : 'bg-gray-300'} transition duration-200`}
                 onClick={() => handleChatSelect(chat)}
               >
-                {/* Profile Image with Conditional Styles for Groups and Users */}
+                {/* Notification Badge */}
+                {getNotificationCount(chat) > 0 && !chat?.isGroupChat && (
+                  <span className="relative top-0 right-1  bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
+                    {getNotificationCount(chat)}
+                  </span>
+                )}
+
+                {/* Profile Image */} 
                 <div className="relative">
                   <div
                     className={`h-10 w-10 max-md:w-6 max-md:h-6 max-md:border-2 rounded-full border-4 
@@ -107,7 +142,7 @@ const Sidebar = () => {
                   </div>
                   {chat?.isGroupChat ? null : isAdminUser(chat) && (
                     <span className="absolute bottom-10 right-0 max-md:bottom-3 max-md:left-0 bg-yellow-500 max-md:bg-transparent max-md:text-yellow-500 text-white text-xs px-2 py-1 rounded-full">
-                      <FaCrown className='max-md:text-xs max-md:bg-transparent'/>
+                      <FaCrown className='max-md:text-xs max-md:bg-transparent' />
                     </span>
                   )}
                 </div>

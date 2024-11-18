@@ -9,7 +9,7 @@ import AdminProfile from '../AdminProfile/AdminProfile';
 const AdminNavbar = () => {
     const { adminLogout } = ChatState();
     const navigate = useNavigate();
-    const location = useLocation();  // Get the current path
+    const location = useLocation(); 
     const [isNavbarOpen, setNavbarOpen] = useState(false);
     const [toggleProfile, setToggleProfile] = useState(false);
 

@@ -6,7 +6,7 @@ import { MenuOutlined, LogoutOutlined, UserOutlined, GroupOutlined, RobotOutline
 import AdminNavbar from '../AdminNavbar/AdminNavbar';
 
 const AdminDashboard = () => {
-    const { adminLogout } = ChatState();
+    const { adminLogout } = ChatState() || {};
     const navigate = useNavigate();
     const [isNavbarOpen, setNavbarOpen] = useState(false);
 
@@ -27,8 +27,11 @@ const AdminDashboard = () => {
     ];
 
     return (
-        <div className="min-h-screen bg-gray-50 flex flex-col">
-            <AdminNavbar/>
+        <div className="relative z-0 min-h-screen bg-gray-50 flex flex-col">
+            <div className="relative z-50">
+            <AdminNavbar />
+            </div>
+            
             {/* Main Content Section */}
             <main className="flex-1 p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 <div className="col-span-full mb-6">

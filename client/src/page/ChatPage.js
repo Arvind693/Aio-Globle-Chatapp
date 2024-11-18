@@ -15,7 +15,7 @@ const ChatPage = () => {
       {user ? (
         <div className="chatPageMainContainer">
           <div>
-            {user.role==="Admin" ?<AdminNavbar/>: <Navbar />}
+            {user.role==="Admin" ?<div className="relative z-50"><AdminNavbar /></div>: <Navbar />}
           </div>
           <div className="sidebarAndChatboxContainer flex">
             <Sidebar />

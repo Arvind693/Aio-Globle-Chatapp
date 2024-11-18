@@ -12,7 +12,6 @@ import SendingMessageAnimation from '../Animations/SendingMessageAnimation';
 import ImageModal from '../Animations/ImageModal';
 import UserDetails from '../UserDetails/UserDetails';
 import ScreenShare from '../../Admin/ScreenShare/ScreenShare';
-import { FaCrown } from "react-icons/fa";
 import { Spin } from 'antd';
 
 const ENDPOINT = process.env.NODE_ENV === 'production' ? 'https://aio-globle-chatapp.onrender.com' : 'http://localhost:5000';
@@ -20,7 +19,7 @@ let socket = io(ENDPOINT), selectedChatCompare;
 let typingTimeout;
 
 const ChatBox = () => {
-  const { selectedChat, user, notification, setNotification } = ChatState();
+  const { selectedChat, setSelectedChat, user, notification, setNotification } = ChatState();
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(false);
@@ -32,6 +31,7 @@ const ChatBox = () => {
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
   const [isScreenShareOpen, setIsScreenShareOpen] = useState(false)
+
 
   const messagesEndRef = useRef(null);
   const chatRef = useRef(null); // Reference for the chat area
@@ -46,7 +46,6 @@ const ChatBox = () => {
   useEffect(() => {
     if (user) {
       socket.emit("setup", user._id);
-      socket.removeAllListeners();
       socket.on("connected", () => setSocketConnected(true));
       socket.on("typing", () => setIsTyping(true));
       socket.on("stop typing", () => setIsTyping(false));
@@ -58,10 +57,7 @@ const ChatBox = () => {
       });
       socket.on("message received", (newMessage) => {
         if (!selectedChatCompare || selectedChatCompare._id !== newMessage.chat._id) {
-          setNotification((prevNotifications) => [
-            ...prevNotifications,
-            newMessage,
-          ]);
+           return 
         } else {
           setMessages((prevMessages) => {
             // Prevent adding duplicate messages
@@ -73,18 +69,27 @@ const ChatBox = () => {
           scrollToBottom();
         }
       });
+      socket.on("notification received", (savedNotification) => {
 
+        setNotification((prevNotifications) => {
+          const isDuplicate = prevNotifications.some(
+            (notif) => notif._id === savedNotification._id
+          );
+          if (!isDuplicate) {
+            return [...prevNotifications, savedNotification];
+          }
+          return prevNotifications;
+        });
+      });
       return () => {
         socket.removeAllListeners();
         clearTimeout(typingTimeout);
       };
-    }
+    } 
   }, [user]);
 
   useEffect(() => {
     if (!selectedChat || !socketConnected) return;
-
-    // Emit `markMessageAsSeen` for each unseen message
     messages.forEach((message) => {
       if (!message.seen && message.sender._id !== user._id) {
         socket.emit('markMessageAsSeen', { chatId, messageId: message._id, userId: user._id });
@@ -109,13 +114,16 @@ const ChatBox = () => {
       socket.off('messageSeen');
     };
   }, []);
-
+  
   useEffect(() => {
     selectedChatCompare = selectedChat;
   }, [selectedChat]);
 
   useEffect(() => {
     if (!chatId) return;
+
+    handleLeaveChat();
+
     const fetchMessages = async () => {
       setLoading(true);
       try {
@@ -132,6 +140,7 @@ const ChatBox = () => {
       }
     };
     fetchMessages();
+    selectedChatCompare = selectedChat;
   }, [selectedChat]);
 
   useEffect(() => {
@@ -277,6 +286,19 @@ const ChatBox = () => {
   const handleScreenShare = () => {
     setIsScreenShareOpen(!isScreenShareOpen);
   }
+  const handleLeaveChat = () => {
+    if (chatId && socketConnected) {
+      socket.emit('leave chat', chatId);
+      console.log(`User left chat room: ${chatId}`);
+    }
+  };
+  useEffect(() => {
+    return () => {
+      handleLeaveChat();
+      socket.removeAllListeners();
+      clearTimeout(typingTimeout);
+    };
+  }, [selectedChat]);
 
   return (
     <div className="chatBoxMainContainer bg-gradient-to-r from-gray-100 to-gray-300 flex flex-col h-full w-full">
@@ -296,9 +318,9 @@ const ChatBox = () => {
           </button>
           <button
             onClick={handleScreenshot}
-            className="max-md:text-10px bg-gradient-to-r from-blue-600 to-red-400 text-white px-3 py-1 rounded-md hover:bg-blue-700"
+            className="flex max-md:text-10px bg-gradient-to-r from-blue-600 to-red-400 text-white px-3 py-1 rounded-md hover:bg-blue-700"
           >
-            <MdCameraAlt size={20} className='max-md:hidden' />Screenshot
+            <MdCameraAlt size={20} className='max-md:hidden' /><span>Screenshot</span>
           </button>
         </div>
       )}
@@ -306,7 +328,7 @@ const ChatBox = () => {
       <div className="flex-1 overflow-y-auto p-2 md:p-4 bg-transparent h-full mb-2 md:mb-5 pb-10">
         {loading ? (
           <div className='w-full h-full flex items-center justify-center'>
-            <p><Spin className='custom-spin'/></p>
+            <p><Spin className='custom-spin' /></p>
           </div>
         ) : (
           messages.map((msg, index) => {
@@ -423,7 +445,6 @@ const ChatBox = () => {
         </form>
         {isImageModalOpen && (<ImageModal imageUrl={selectedImage} onClose={closeImageModal} />)}
         {userDetailsModal && (<UserDetails onClose={() => setUserDetailsModal(!userDetailsModal)} />)}
-        {/* {isScreenShareOpen && (<ScreenShare admin={true} userId="672b3d3abdfe103e6159b7fe" />)} */}
         <ScreenShare
           socket={socket}
           isScreenShareOpen={isScreenShareOpen}

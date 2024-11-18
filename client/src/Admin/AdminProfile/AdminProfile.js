@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { ChatState } from '../../Context/ChatProvider';
 import axios from 'axios';
 import { message, Spin } from 'antd';
+import './AdminProfile.css';
 
 const AdminProfile = ({ onToggle }) => {
     const { user, setUser, adminLogout } = ChatState();
@@ -83,10 +84,10 @@ const AdminProfile = ({ onToggle }) => {
     };
 
     return (
-        <div className="w-64 absolute bg-gray-800 top-20 right-3 p-5 rounded-b-lg shadow-lg z-50 animate-fadeInSlideUp">
+        <div className="admin-profile-popup w-64 absolute bg-gray-800 top-20 right-3 p-5 rounded-b-lg shadow-lg animate-fadeInSlideUp">
             <FaWindowClose
                 onClick={onToggle}
-                className='text-white relative left-52 bottom-4 hover:text-red-500' />
+                className='text-white relative left-52 bottom-4 hover:text-red-500 cursor-pointer' />
 
             {/* User Image and Name */}
             <div className="flex items-center justify-between bg-gray-700 rounded-lg p-3 mb-4 transition-colors duration-300 hover:bg-gray-600">
@@ -114,9 +115,9 @@ const AdminProfile = ({ onToggle }) => {
                     <button
                         className='text-sm bg-green-600 p-1 w-20 rounded text-white'
                         onClick={handleUpdateProfile}
-                        disabled={loading} // Disable button while loading
+                        disabled={loading} 
                     >
-                        {loading ? <Spin size="small" /> : 'Update'} {/* Show loader if loading */}
+                        {loading ? <Spin size="small" /> : 'Update'} 
                     </button>
                 </div>
             )}
@@ -128,7 +129,7 @@ const AdminProfile = ({ onToggle }) => {
                         onClick={() => setToggleUpdateName(!toggleUpdateName)}
                         className="mb-2 flex items-center gap-2 transition-colors duration-300 hover:text-yellow-400">
                         <span>{user.name}</span>
-                        <FaEdit />
+                        <FaEdit className='cursor-pointer' />
                     </p>
                     {toggleUpdateName && (
                         <div className='flex '>

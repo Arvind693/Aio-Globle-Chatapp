@@ -3,6 +3,7 @@ const User = require('../models/userModel');
 const Chat = require('../models/chatModel');
 const { Error } = require('mongoose');
 const cloudinary = require('../config/cloudinary');
+const Notification = require('../models/noificationModel');
 
 // Get all messages
 const allMessages = async (req, res) => {
@@ -33,7 +34,9 @@ const sendMessage = async (req, res) => {
   }
 
   if (!content && !uploadedFile) {
-    return res.status(400).json({ message: "Message content or file is required" });
+    return res
+      .status(400)
+      .json({ message: "Message content or file is required" });
   }
 
   const newMessage = {
@@ -48,9 +51,12 @@ const sendMessage = async (req, res) => {
     let message = await Message.create(newMessage);
 
     // Populate the sender field with specific fields
-    message = await Message.populate(message, { path: "sender", select: "name profileImage" });
+    message = await Message.populate(message, {
+      path: "sender",
+      select: "name profileImage",
+    });
 
-    // Populate the chat field and its users in one go
+    // Populate the chat field and its users
     message = await Message.populate(message, {
       path: "chat",
       populate: {
@@ -63,7 +69,49 @@ const sendMessage = async (req, res) => {
     await Chat.findByIdAndUpdate(chatId, { latestMessage: message });
 
     // Emit the new message to all users in the chat room
-    req.io.to(chatId).emit('message received', message);
+    req.io.to(chatId).emit("message received", message);
+
+    /**
+     * Notification Logic:
+     * Only create a notification if either the sender or the receiver is not present in the same chat room.
+     */
+    const activeUsers = req.activeUsers; // Use activeUsers passed in middleware
+    const senderId = req.user._id.toString();
+    const chat = message.chat;
+    const chatIdString = chat._id.toString();
+
+    // Check if the sender is active in the chat room
+    const isSenderInChatRoom =
+      activeUsers[senderId] && activeUsers[senderId] === chatIdString;
+
+    // Iterate through each user in the chat
+    for (const user of chat.users) {
+      const receiverId = user._id.toString();
+
+      // Skip notification for the sender
+      if (receiverId === senderId) continue;
+
+      // Check if the receiver is active in the same chat room
+      const isReceiverInChatRoom =
+        activeUsers[receiverId] && activeUsers[receiverId] === chatIdString;
+
+      /**
+       * Create notification only if either sender or receiver is not in the chat room.
+       * This prevents notifications when both are already chatting in the same room.
+       */
+      if (!isSenderInChatRoom || !isReceiverInChatRoom) {
+        const notification = {
+          sender: senderId,
+          receiver: receiverId,
+          chat: chatIdString,
+          content: message.content || "Sent a file",
+        };
+
+        // Create the notification and emit it
+        const savedNotification = await Notification.create(notification);
+        req.io.to(receiverId).emit("notification received", savedNotification);
+      }
+    }
 
     // Send the populated message as the response
     res.json(message);
@@ -79,6 +127,7 @@ const sendMessage = async (req, res) => {
     res.status(500).json({ message: "Failed to send message", error });
   }
 };
+ 
 const deleteMessage = async (req, res) => {
   const messageId = req.params.id;
   const userId = req.user._id; // ID of the authenticated user

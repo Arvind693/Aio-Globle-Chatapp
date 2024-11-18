@@ -3,6 +3,7 @@ import axios from 'axios';
 import { message, Spin } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import logo from '../../Assets/images/aio-globel2.png'
+import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 
 const AdminLoginSignUp = () => {
   const [isSignUp, setIsSignUp] = useState(false);
@@ -12,6 +13,7 @@ const AdminLoginSignUp = () => {
   const [profileImage, setProfileImage] = useState(null);  // For optional profile image (Sign Up)
   const [error, setError] = useState(null);         // To display any error messages
   const [loader, setLoader] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
 
@@ -159,17 +161,25 @@ const AdminLoginSignUp = () => {
               <label htmlFor="password" className="block text-sm font-medium text-gray-700">
                 Password
               </label>
-              <input
-                type="password"
-                id="password"
-                value={password}
-                placeholder="Create password"
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                className="text-xs max-md:p-2 p-2 block w-full border border-gray-300 rounded-md shadow-sm"
-              />
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  id="password"
+                  value={password}
+                  placeholder="Create password"
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  className="text-xs max-md:p-2 p-2 block w-full border border-gray-300 rounded-md shadow-sm pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500"
+                >
+                  {showPassword ? <AiOutlineEyeInvisible size={20} /> : <AiOutlineEye size={20} />}
+                </button>
+              </div>
             </div>
-
             {isSignUp && (
               <div>
                 <label htmlFor="profileImage" className="block text-sm font-medium text-gray-700">
