@@ -38,6 +38,7 @@ const io = new Server(server, {
   },
 });
 
+
 // Attach io and activeUsers to Requests
 app.use((req, res, next) => {
   req.activeUsers = activeUsers;
@@ -45,13 +46,13 @@ app.use((req, res, next) => {
   next();
 });
 
-
 // Use the router for API routes
 app.use('/api/admin', adminRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/message', messageRoute);
 app.use('/api/auto-responses', autoResponseRoute);
+
 
 
 
@@ -77,6 +78,7 @@ if (process.env.NODE_ENV === "production") {
 app.use(notFound);
 app.use(errorHandler);
 
+
 io.on('connection', (socket) => {
   console.log('A user connected:', socket.id);
 
@@ -92,7 +94,6 @@ io.on('connection', (socket) => {
   socket.on('setup', (userId) => {
     socket.userId = userId;
     socket.join(userId);
-    activeUsers[userId] = { socketId: socket.id, isOnline: true };
     io.emit('update-user-status', { userId, isOnline: true });
     updateUserOnlineStatus(userId, true);
     console.log(`User with ID ${userId} joined their personal room.`);
@@ -100,10 +101,10 @@ io.on('connection', (socket) => {
   });
 
   // Track user's active chat room
-  socket.on('join chat', (room) => {  
-    const userId = socket.userId;    
+  socket.on('join chat', (room) => {
+    const userId = socket.userId;
     if (userId) {
-      activeUsers[userId].activeRoom = room;
+      activeUsers[userId] = room;
       socket.join(room);
       console.log(`User with ID ${userId} joined chat room: ${room}`);
     }
@@ -147,25 +148,19 @@ io.on('connection', (socket) => {
   socket.on("stop screen share", ({ userId }) => {
     socket.broadcast.emit("screen sharing stopped", { userId });
   });
+
   socket.on('logout', ({ userId }) => {
-    console.log(`User with ID ${userId} logged out.`);
-    if (activeUsers[userId]) {
-      activeUsers[userId].isOnline = false;
       io.emit('update-user-status', { userId, isOnline: false });
-      updateUserOnlineStatus(userId, false);
-      delete activeUsers[userId];  
-    }
+      updateUserOnlineStatus(userId, false); 
   });
 
-  socket.on('disconnect', () => { 
+  socket.on('disconnect', () => {
     const userId = socket.userId;
     console.log(`User disconnected: ${socket.id}`);
-    if (userId && activeUsers[userId]) {
-      activeUsers[userId].isOnline = false;
+    if (userId) {
       console.log(`User with ID ${userId} disconnected.`);
       io.emit('update-user-status', { userId, isOnline: false });
       updateUserOnlineStatus(userId, false);
-      delete activeUsers[userId]; 
     }
   });
 });

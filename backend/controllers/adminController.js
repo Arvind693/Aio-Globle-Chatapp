@@ -173,7 +173,7 @@ const registerUser = async (req, res) => {
 
 const getAllUsers = async (req, res) => {
     try {
-        const users = await User.find({ role: { $ne: 'Admin' } }, {
+        const users = await User.find({}, {
             password: 1, 
             name: 1, 
             userName: 1,

@@ -12,10 +12,10 @@ import ChatHeader from './ChatHeader';
 import MessageList from './MessageList';
 
 const ENDPOINT = process.env.NODE_ENV === 'production' ? 'https://aio-globle-chatapp.onrender.com' : 'http://localhost:5000';
-let socket , selectedChatCompare;
+let socket, selectedChatCompare;
 let typingTimeout;
 
-const ChatBox = () => { 
+const ChatBox = () => {
   const { selectedChat, setSelectedChat, user, notification, setNotification } = ChatState();
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
@@ -42,16 +42,11 @@ const ChatBox = () => {
 
   useEffect(() => {
     if (user) {
-      if (!socket) {
-        socket = io(ENDPOINT);
-        socket.emit("setup", user._id);
-        socket.on("connected", () => {
-          setSocketConnected(true);
-        });
-        socket.on("typing", () => setIsTyping(true));
-        socket.on("stop typing", () => setIsTyping(false));
-      }
-     
+      socket = io(ENDPOINT);
+      socket.emit("setup", user._id);
+      socket.on("connected", () => setSocketConnected(true));
+      socket.on("typing", () => setIsTyping(true));
+      socket.on("stop typing", () => setIsTyping(false));
       socket.on("message deleted for everyone", ({ messageId }) => {
         setMessages((prevMessages) => prevMessages.filter((msg) => msg._id !== messageId));
       });
@@ -89,7 +84,7 @@ const ChatBox = () => {
         clearTimeout(typingTimeout);
       };
     }
-  }, [user,socketConnected]);
+  }, [user]);
 
   useEffect(() => {
     if (!selectedChat || !socketConnected) return;
@@ -132,7 +127,7 @@ const ChatBox = () => {
       try {
         const { data } = await axios.get(`/api/message/${chatId}`, {
           headers: { Authorization: `Bearer ${userInfo.token}` }
-        }); 
+        });
         setMessages(data);
         setLoading(false);
         scrollToBottom();

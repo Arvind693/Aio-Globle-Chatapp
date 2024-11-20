@@ -86,7 +86,7 @@ const sendMessage = async (req, res) => {
 
     // Iterate through each user in the chat
     for (const user of chat.users) {
-      const receiverId = user._id.toString();
+      const receiverId = user._id.toString(); 
 
       // Skip notification for the sender
       if (receiverId === senderId) continue;

@@ -11,6 +11,7 @@ const ENDPOINT = process.env.NODE_ENV === 'production' ? 'https://aio-globle-cha
 let socket = io(ENDPOINT);
 
 const UserManagement = () => {
+    const { user } = ChatState();
     const [users, setUsers] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [searchResults, setSearchResults] = useState([]);
@@ -30,7 +31,6 @@ const UserManagement = () => {
     });
     const adminInfo = JSON.parse(localStorage.getItem('adminInfo'));
 
-    console.log("users:",users)
     useEffect(() => {
         socket.on('update-user-status', ({ userId, isOnline }) => {
             // Update local state with the user's new status
@@ -49,11 +49,14 @@ const UserManagement = () => {
     useEffect(() => {
         fetchUsers();
     }, []);
-
+ 
     const fetchUsers = async () => {
         try {
             const response = await axios.get('/api/admin/users');
-            setUsers(response.data.data);
+            const filteredUsers = response.data.data.filter(
+                (u) => u._id !== user?._id
+            );
+            setUsers(filteredUsers);
         } catch (error) {
             console.error('Error fetching users:', error);
         }
