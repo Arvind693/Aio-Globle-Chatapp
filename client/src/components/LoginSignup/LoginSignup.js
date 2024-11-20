@@ -40,7 +40,7 @@ const Login = () => {
       if (response.data.success) {
         message.success(response.data.message, 2);
         localStorage.setItem('userInfo', JSON.stringify(response.data.data));
-        navigate('/user/userdashboard');
+        navigate('/user/user-dashboard');
       } else {
         message.error(response.data.message, 2);
       }

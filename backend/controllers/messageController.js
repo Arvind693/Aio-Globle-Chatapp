@@ -162,7 +162,7 @@ const deleteMessage = async (req, res) => {
 
       return res.status(200).json({ message: 'Message deleted for everyone' });
     }
-
+ 
     // Local deletion only for the non-sender
     if (req.io) {
       req.io.to(userId.toString()).emit('message deleted locally', { messageId });

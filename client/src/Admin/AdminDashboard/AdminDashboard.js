@@ -1,30 +1,15 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChatState } from '../../Context/ChatProvider';
-import { Menu, Dropdown } from 'antd';
-import { MenuOutlined, LogoutOutlined, UserOutlined, GroupOutlined, RobotOutlined } from '@ant-design/icons';
 import AdminNavbar from '../AdminNavbar/AdminNavbar';
 
+
+
 const AdminDashboard = () => {
-    const { adminLogout } = ChatState() || {};
     const navigate = useNavigate();
-    const [isNavbarOpen, setNavbarOpen] = useState(false);
+    const goAutoResponseManagement = () => navigate('/admin/auto-responses-management');
+    const goGroupManagement = () => navigate('/admin/group-management');
+    const goUserManagement = () => navigate('/admin/user-management');
 
-    const handleLogout = () => {
-        adminLogout();
-        navigate('/');
-    };
-
-    const goAutoResponseManagement = () => navigate('/admin/autoResponsesManagement');
-    const goGroupManagement = () => navigate('/admin/groupManagement');
-    const goUserManagement = () => navigate('/admin/userManagement');
-
-    // Navbar menu items
-    const menuItems = [
-        { key: '1', label: 'User Management', icon: <UserOutlined />, onClick: goUserManagement },
-        { key: '2', label: 'Group Management', icon: <GroupOutlined />, onClick: goGroupManagement },
-        { key: '3', label: 'Auto Response Management', icon: <RobotOutlined />, onClick: goAutoResponseManagement },
-    ];
 
     return (
         <div className="relative z-0 min-h-screen bg-gray-50 flex flex-col">

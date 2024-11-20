@@ -2,17 +2,45 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import './UsersSideBar.css';
 import { ChatState } from '../../../Context/ChatProvider';
-import { FaCrown } from "react-icons/fa";
+import { FaCrown, FaCircle } from "react-icons/fa";
+import io from 'socket.io-client';
+
+const ENDPOINT = process.env.NODE_ENV === 'production' ? 'https://aio-globle-chatapp.onrender.com' : 'http://localhost:5000';
+let socket;
 
 const Sidebar = () => {
+  const [onlineUsers, setOnlineUsers] = useState({});
   const [loggedUser, setLoggedUser] = useState(null);
-  const { selectedChat, setSelectedChat, chats, setChats, user, notification, setNotification } = ChatState();
+  const { selectedChat, setSelectedChat, chats, setChats, user,
+    notification,
+    setNotification,
+  } = ChatState();
   const [loading, setLoading] = useState(true);
 
-  // Determine the user role and retrieve appropriate user info
-  const userInfo = user?.role === 'Admin'
-    ? JSON.parse(localStorage.getItem('adminInfo'))
-    : JSON.parse(localStorage.getItem('userInfo'));
+
+  const userInfo = React.useMemo(() => {
+    return user?.role === 'Admin'
+      ? JSON.parse(localStorage.getItem('adminInfo'))
+      : JSON.parse(localStorage.getItem('userInfo'));
+  }, [user]);
+
+  // Initialize socket connection
+  useEffect(() => {
+    if (user) {
+      socket = io(ENDPOINT);
+      // socket.emit("setup", user._id);
+      socket.on('update-user-status', ({ userId, isOnline }) => {
+        setOnlineUsers((prev) => ({
+          ...prev,
+          [userId]: { isOnline },
+        }));
+      });
+
+      return () => {
+        socket.off('update-user-status');
+      };
+    }
+  }, []);
 
   // Fetch the chats from the API
   const fetchChats = async () => {
@@ -31,6 +59,29 @@ const Sidebar = () => {
       setLoading(false);
     }
   };
+
+  // Fetch notifications for the user
+  const fetchNotifications = async () => {
+    try {
+      const { data } = await axios.get(`/api/message/fetch-notification/${user?._id}`);
+      setNotification((prevNotifications) => {
+        const newNotifications = data.notifications.filter(
+          (newNotification) =>
+            !prevNotifications.some((prevNotification) => prevNotification._id === newNotification._id)
+        );
+        return [...prevNotifications, ...newNotifications];
+      });
+    } catch (error) {
+      console.error('Failed to fetch notifications:', error.message);
+    }
+  };
+
+  // Effect to fetch notifications on mount
+  useEffect(() => {
+    if (user?._id) {
+      fetchNotifications();
+    }
+  }, [user?._id, notification]);
 
   useEffect(() => {
     const storedUserInfo = user?.role === 'Admin'
@@ -75,18 +126,12 @@ const Sidebar = () => {
 
   const isSelectedChat = (chat) => selectedChat?._id === chat?._id;
 
-  // Function to get the notification count for a specific chat
   const getNotificationCount = (chat) => {
-    // Filter notifications where the sender is one of the chat users (excluding the logged-in user)
-    const otherUserIds = chat.users
-      .filter((u) => u._id !== loggedUser?._id)
-      .map((u) => u._id);
 
-    // Count notifications where the sender is in the list of chat users
-    const count = notification.filter((n) => otherUserIds.includes(n.sender._id)).length;
-    return count;
+    return notification.filter((n) => n.chat._id === chat._id).length;
   };
 
+  const isUserOnline = (userId) => onlineUsers[userId]?.isOnline;
   return (
     <div className="sidebarMainContainer w-1/4 h-full bg-gray-200 p-4 text-white flex flex-col max-md:p-2">
       {/* Header */}
@@ -109,17 +154,29 @@ const Sidebar = () => {
               <div
                 key={index}
                 className={`p-4 max-md:p-1 mt-2 cursor-pointer flex max-md:flex-col items-center max-md:gap-0 rounded-lg 
-                    ${isSelectedChat(chat) ? 'bg-green-500' : 'bg-gray-300'} transition duration-200`}
+                    ${isSelectedChat(chat) ? 'bg-gray-400' : 'bg-gray-300'} transition duration-200`}
                 onClick={() => handleChatSelect(chat)}
               >
                 {/* Notification Badge */}
-                {getNotificationCount(chat) > 0 && !chat?.isGroupChat && (
+                {getNotificationCount(chat) > 0 && (
                   <span className="relative top-0 right-1  bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
                     {getNotificationCount(chat)}
                   </span>
                 )}
 
-                {/* Profile Image */} 
+                {/* Online/Offline Status */}
+                {!chat?.isGroupChat && (
+                  <FaCircle
+                    className={`mr-2 text-sm ${isUserOnline(
+                      chat?.users?.find((u) => u._id !== loggedUser?._id)?._id
+                    )
+                      ? 'text-green-500'
+                      : 'text-red-500'
+                      }`}
+                  />
+                )}
+
+                {/* Profile Image */}
                 <div className="relative">
                   <div
                     className={`h-10 w-10 max-md:w-6 max-md:h-6 max-md:border-2 rounded-full border-4 

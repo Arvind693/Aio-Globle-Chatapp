@@ -1,10 +1,14 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { useNavigate, useLocation } from 'react-router-dom';
+import io from "socket.io-client";
 
 const ChatContext = createContext();
 
+const ENDPOINT = process.env.NODE_ENV === 'production' ? 'https://aio-globle-chatapp.onrender.com' : 'http://localhost:5000';
+let socket;
+
 const ChatProvider = ({ children }) => {
-  const [user, setUser] = useState(null); // Initialize user as null
+  const [user, setUser] = useState(null);
   const [selectedChat, setSelectedChat] = useState(null);
   const [notification, setNotification] = useState([]);
   const [chats, setChats] = useState([]);
@@ -18,34 +22,44 @@ const ChatProvider = ({ children }) => {
 
       if (adminInfo) {
         setUser(adminInfo.user);
-        if (location.pathname === '/') {
+        if (location.pathname === '/' || location.pathname === '/admin-login-signup') {
           navigate('/admin_dashboard');  
         }
       } else if (userInfo) {
         setUser(userInfo.user);
+        if (location.pathname === '/' || location.pathname === '/user-login-signup') {
+          navigate('/user/user-dashboard');
+        }
       } else if (location.pathname === '/admin_dashboard') {
         navigate('/admin_login');  
       }
     };
 
     fetchUserFromLocalStorage();
-  }, [location, navigate]); 
+  }, [location, navigate]);  
+  
 
   // Logout function
   const logout = () => {
+    if (socket) {
+      socket.emit('logout', { userId: user?._id });
+      socket.disconnect(); 
+    }
     localStorage.removeItem('userInfo');
     setChats([]);
     setUser(null); 
     setSelectedChat(null);
-    navigate('/'); 
   };
 
   const adminLogout = () => {
+    if (socket) {
+      socket.emit('logout', { userId: user?._id }); 
+      socket.disconnect(); 
+    }
     localStorage.removeItem('adminInfo');
     setChats([]);
     setUser(null); 
     setSelectedChat(null);
-    navigate('/admin_login'); 
   };
 
   return (

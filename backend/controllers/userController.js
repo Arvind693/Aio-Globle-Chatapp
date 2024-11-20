@@ -27,15 +27,12 @@ const registerUser = async (req, res) => {
             });
         }
 
-        // Hash the password
-        const hashedPassword = await bcrypt.hash(password, 10);
-
 
         // Register as regular User with default permissions (limited features)
         let user = await User.create({
             name,
             userName,
-            password: hashedPassword,
+            password,
             role: "User",
             permissions: {
                 canMessage: false,
@@ -95,7 +92,7 @@ const loginUser = async (req, res) => {
         if(role!==user.role){
             return res.send({message:"You are not a user"})
         }
-        if (user && await bcrypt.compare(password, user.password)) {
+        if (user) {
             const token = generateToken(user._id);
             res.status(200).json({
                 success: true,

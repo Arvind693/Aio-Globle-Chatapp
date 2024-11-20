@@ -12,6 +12,7 @@ const autoResponseRoute = require('./routes/autoResponseRoutes');
 const { notFound, errorHandler } = require('./middleware/errorMiddleware');
 const Message = require('./models/messageModel');
 const path = require('path');
+const User = require('./models/userModel');
 
 // Initialize express app
 const app = express();
@@ -76,22 +77,33 @@ if (process.env.NODE_ENV === "production") {
 app.use(notFound);
 app.use(errorHandler);
 
-
 io.on('connection', (socket) => {
   console.log('A user connected:', socket.id);
+
+  const updateUserOnlineStatus = async (userId, isOnline) => {
+    try {
+      await User.findByIdAndUpdate(userId, { isOnline });
+      console.log(`User ${userId} is now ${isOnline ? 'online' : 'offline'}`);
+    } catch (error) {
+      console.error(`Error updating user status for ${userId}:`, error);
+    }
+  };
 
   socket.on('setup', (userId) => {
     socket.userId = userId;
     socket.join(userId);
+    activeUsers[userId] = { socketId: socket.id, isOnline: true };
+    io.emit('update-user-status', { userId, isOnline: true });
+    updateUserOnlineStatus(userId, true);
     console.log(`User with ID ${userId} joined their personal room.`);
     socket.emit('connected');
   });
 
   // Track user's active chat room
-  socket.on('join chat', (room) => {
-    const userId = socket.userId;
+  socket.on('join chat', (room) => {  
+    const userId = socket.userId;    
     if (userId) {
-      activeUsers[userId] = room;
+      activeUsers[userId].activeRoom = room;
       socket.join(room);
       console.log(`User with ID ${userId} joined chat room: ${room}`);
     }
@@ -135,9 +147,26 @@ io.on('connection', (socket) => {
   socket.on("stop screen share", ({ userId }) => {
     socket.broadcast.emit("screen sharing stopped", { userId });
   });
+  socket.on('logout', ({ userId }) => {
+    console.log(`User with ID ${userId} logged out.`);
+    if (activeUsers[userId]) {
+      activeUsers[userId].isOnline = false;
+      io.emit('update-user-status', { userId, isOnline: false });
+      updateUserOnlineStatus(userId, false);
+      delete activeUsers[userId];  
+    }
+  });
 
-  socket.on('disconnect', () => {
-    console.log('A user disconnected:', socket.id);
+  socket.on('disconnect', () => { 
+    const userId = socket.userId;
+    console.log(`User disconnected: ${socket.id}`);
+    if (userId && activeUsers[userId]) {
+      activeUsers[userId].isOnline = false;
+      console.log(`User with ID ${userId} disconnected.`);
+      io.emit('update-user-status', { userId, isOnline: false });
+      updateUserOnlineStatus(userId, false);
+      delete activeUsers[userId]; 
+    }
   });
 });
 

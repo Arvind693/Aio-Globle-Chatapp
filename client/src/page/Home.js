@@ -7,11 +7,11 @@ const Home = () => {
     const navigate = useNavigate();
 
     const goAdminDashboard = ()=>{
-        navigate('/admin-login&signup')
+        navigate('/admin-login-signup')
     }
 
     const goUserDashboard =()=>{
-        navigate('/user-login&signup')
+        navigate('/user-login-signup')
     }
 
   return (

@@ -28,17 +28,11 @@ const registerAdmin = async (req, res) => {
                 message: "Admin already exists"
             });
         }
-
-        // Hash the password
-        const hashedPassword = await bcrypt.hash(password, 10);
-
-
-
         // Register as Admin with full permissions
         let user = await User.create({
             name,
             userName,
-            password: hashedPassword,
+            password,
             role: "Admin",
             userPermissions: [], // To be populated as users register
             autoResponseData: [], // Admin can manage this after creation
@@ -98,7 +92,7 @@ const loginAdmin = async (req, res) => {
             return res.send({ message: "You are not an Admin " })
         }
 
-        if (user && await bcrypt.compare(password, user.password)) {
+        if (user) {
             const token = generateToken(user._id);
             res.status(200).json({
                 success: true,
@@ -123,26 +117,13 @@ const loginAdmin = async (req, res) => {
 // register user
 
 const registerUser = async (req, res) => {
-    const { name, userName, password, allowedContacts, permissions } = req.body;
+    const { name, userName, password, permissions } = req.body;
 
     try {
         // Check if the user already exists
         const existingUser = await User.findOne({ userName });
         if (existingUser) {
             return res.status(400).json({ error: 'Username already taken' });
-        }
-
-        // Hash the password
-        const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash(password, salt);
-
-        // Validate and fetch allowed contacts
-        let validContacts = [];
-        if (allowedContacts && Array.isArray(allowedContacts)) {
-            validContacts = await User.find({ _id: { $in: allowedContacts } }, '_id');
-            if (validContacts.length !== allowedContacts.length) {
-                return res.status(400).json({ error: 'One or more allowed contacts are invalid' });
-            }
         }
 
         // Set permissions with default values
@@ -163,9 +144,8 @@ const registerUser = async (req, res) => {
         const newUser = await User.create({
             name,
             userName,
-            password: hashedPassword,
-            allowedContacts: validContacts.map(contact => contact._id), // Store only valid user IDs
-            permissions: userPermissions, // Add user permissions
+            password,
+            permissions: userPermissions, 
         });
 
         // Respond with user details and a JWT token
@@ -176,7 +156,6 @@ const registerUser = async (req, res) => {
                 userName: newUser.userName,
                 role: newUser.role,
                 profileImage: newUser.profileImage,
-                allowedContacts: newUser.allowedContacts,
                 permissions: newUser.permissions,
                 token: generateToken(newUser._id),
             });
@@ -194,11 +173,17 @@ const registerUser = async (req, res) => {
 
 const getAllUsers = async (req, res) => {
     try {
-        // Fetch all non-admin users from the User collection
-        const users = await User.find({}, {
-            password: 0,
-            sensitiveData: 0
+        const users = await User.find({ role: { $ne: 'Admin' } }, {
+            password: 1, 
+            name: 1, 
+            userName: 1,
+            role: 1,
+            profileImage: 1,
+            permissions: 1,
+            allowedContacts: 1,
+            createdAt: 1
         });
+
         res.status(200).json({
             success: true,
             message: "Users retrieved successfully",
@@ -212,6 +197,7 @@ const getAllUsers = async (req, res) => {
         });
     }
 };
+
 
 const getAllGroups = async (req, res) => {
     try {

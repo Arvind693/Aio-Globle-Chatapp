@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { MenuOutlined, LogoutOutlined, UserOutlined, GroupOutlined, RobotOutlined, MessageOutlined } from '@ant-design/icons';
+import { MenuOutlined,  UserOutlined, GroupOutlined, RobotOutlined, MessageOutlined } from '@ant-design/icons';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { ChatState } from '../../Context/ChatProvider';
 import logo1 from '../../Assets/images/aio-globel1.png';
@@ -7,7 +7,6 @@ import { FaRegWindowClose } from "react-icons/fa";
 import AdminProfile from '../AdminProfile/AdminProfile';
 
 const AdminNavbar = () => {
-    const { adminLogout } = ChatState();
     const navigate = useNavigate();
     const location = useLocation(); 
     const [isNavbarOpen, setNavbarOpen] = useState(false);
@@ -15,19 +14,14 @@ const AdminNavbar = () => {
 
     const user = JSON.parse(localStorage.getItem('adminInfo')).user;
 
-    const handleLogout = () => {
-        adminLogout();
-        navigate('/');
-    };
-
     const handleToggleProfile = () => {
         setToggleProfile(!toggleProfile);
     }
     const menuItems = [
         { key: '/chat', label: 'Chats Place', icon: <MessageOutlined />, path: '/chat' },
-        { key: '/admin/userManagement', label: 'User Management', icon: <UserOutlined />, path: '/admin/userManagement' },
-        { key: '/admin/groupManagement', label: 'Group Management', icon: <GroupOutlined />, path: '/admin/groupManagement' },
-        { key: '/admin/autoResponsesManagement', label: 'Auto Response Management', icon: <RobotOutlined />, path: '/admin/autoResponsesManagement' },
+        { key: '/admin/user-management', label: 'User Management', icon: <UserOutlined />, path: '/admin/user-management' },
+        { key: '/admin/group-management', label: 'Group Management', icon: <GroupOutlined />, path: '/admin/group-management' },
+        { key: '/admin/auto-responses-management', label: 'Auto Response Management', icon: <RobotOutlined />, path: '/admin/auto-responses-management' },
     ];
 
     return (

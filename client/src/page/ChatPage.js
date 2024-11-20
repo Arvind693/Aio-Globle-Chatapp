@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState,useEffect, } from 'react';
 import Navbar from '../components/Navbar/Navbar';
 import Sidebar from '../components/Navbar/UsersSidebar/UsersSideBar';
 import ChatBox from '../components/ChatBox/ChatBox';
@@ -6,9 +6,26 @@ import WelcomePage from '../components/WelcomePage/WelcomePage'; // Import Welco
 import './ChatPage.css';
 import { ChatState } from '../Context/ChatProvider';
 import AdminNavbar from '../Admin/AdminNavbar/AdminNavbar';
+import io from 'socket.io-client';
+
+const ENDPOINT = process.env.NODE_ENV === 'production' ? 'https://aio-globle-chatapp.onrender.com' : 'http://localhost:5000';
+let socket;
 
 const ChatPage = () => {
   const { user, selectedChat } = ChatState();
+
+  useEffect(() => {
+    if (user && user._id) {
+      if (!socket) {
+        socket = io(ENDPOINT);
+        socket.emit("setup", user._id);
+        return () => {
+          socket.disconnect();
+          socket = null; 
+        };
+      }
+    }
+  }, [user]);
   
   return (
     <div>
@@ -28,7 +45,7 @@ const ChatPage = () => {
           </div>
         </div>
       ) : (
-        <div>Loading...</div>
+        <div> Loading...</div>
       )}
     </div>
   );

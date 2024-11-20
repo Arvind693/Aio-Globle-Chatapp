@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBell, faRobot } from '@fortawesome/free-solid-svg-icons';
-
+import AutoResponseSidebar from '../AutoResponseSidebar/AutoResponseSidebar';
 import UserProfile from '../UserProfile/UserProfile';
 import Notification from '../Notification/Notification'; // Import Notification
 import './Navbar.css';
@@ -10,11 +10,12 @@ import { ChatState } from '../../Context/ChatProvider';
 import axios from 'axios';
 
 const Navbar = () => {
-    const { setSelectedChat,user, notification, setNotification } = ChatState();
+    const { setSelectedChat, user, notification, setNotification } = ChatState();
     const [toggleProfile, setToggleProfile] = useState(false);
     const [showNotifications, setShowNotifications] = useState(false);
-    
-    const fetchAllNotifications = async()=>{
+    const [openAutoResponseSidebar, setOpenAutoResponseSidebar] = useState(false);
+
+    const fetchAllNotifications = async () => {
         try {
             const response = await axios.get(`/api/message/fetch-notification/${user._id}`);
             setNotification(response.data.notifications);
@@ -22,10 +23,14 @@ const Navbar = () => {
             console.log("Failed to fetching notifications")
         }
     }
-   
-    useEffect(()=>{
+
+    useEffect(() => {
         fetchAllNotifications();
-    },[user,notification])
+    }, [user, notification])
+
+    const handleToggleAutoResponseSidebar = () => {
+        setOpenAutoResponseSidebar(prevState => !prevState);
+    };
 
     const handleToggleProfile = () => {
         setToggleProfile(!toggleProfile);
@@ -37,18 +42,18 @@ const Navbar = () => {
 
     const handleClearNotification = (notificationId) => {
         setNotification((prevNotifications) =>
-          prevNotifications.filter((notif) => notif._id !== notificationId)
+            prevNotifications.filter((notif) => notif._id !== notificationId)
         );
-      };
-    
-      const handleSelectNotification = (chatId) => {
+    };
+
+    const handleSelectNotification = (chatId) => {
         const selectedNotification = notification.find((notif) => notif.chat._id === chatId);
         setNotification((prevNotifications) =>
-          prevNotifications.filter((notif) => notif.chat._id !== chatId)
+            prevNotifications.filter((notif) => notif.chat._id !== chatId)
         );
         setSelectedChat(selectedNotification.chat);
         setShowNotifications(!showNotifications)
-      };
+    };
 
     return (
         <nav className="bg-gradient-to-r from-white via-pink-400 to-purple-600 p-4 max-md:p-2">
@@ -57,7 +62,14 @@ const Navbar = () => {
                 <div className="text-white text-xl font-bold flex items-center gap-3 w-24 max-sm:w-12">
                     <img src={logo1} alt="AIO-Globel Logo" />
                 </div>
-
+                {/* get instant response Button */}
+                <button
+                    onClick={handleToggleAutoResponseSidebar}
+                    className="max-md:text-8px max-md:rounded flex items-center px-4 py-2 max-md:px-2 max-md:py-1 bg-gradient-to-r from-blue-600 to-blue-500 text-white font-semibold rounded-full shadow-lg hover:from-blue-700 hover:to-blue-600 transition duration-300 ease-in-out"
+                >
+                    <FontAwesomeIcon icon={faRobot} className="mr-2 text-lg max-md:text-xs" /> {/* Icon */}
+                    Get Assistant
+                </button>
                 {/* Right Side Icons and Features */}
                 <div className="flex gap-10 max-sm:gap-2 max-sm:ml-2">
                     {/* Notification Icon */}
@@ -102,6 +114,7 @@ const Navbar = () => {
                     </div>
 
                     {toggleProfile && <UserProfile onToggle={handleToggleProfile} />}
+                    {openAutoResponseSidebar && <AutoResponseSidebar isOpen={openAutoResponseSidebar} onClose={handleToggleAutoResponseSidebar} />}
                 </div>
             </div>
         </nav>

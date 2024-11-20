@@ -1,15 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import io from 'socket.io-client';
 
 import { message, Spin } from 'antd';
 import UserList from '../UserManagement/UserList';
 import AdminNavbar from '../AdminNavbar/AdminNavbar';
+import { ChatState } from '../../Context/ChatProvider';
+
+const ENDPOINT = process.env.NODE_ENV === 'production' ? 'https://aio-globle-chatapp.onrender.com' : 'http://localhost:5000';
+let socket = io(ENDPOINT);
 
 const UserManagement = () => {
     const [users, setUsers] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [searchResults, setSearchResults] = useState([]);
-    const [allowedContactsNames, setAllowedContactsNames] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [formData, setFormData] = useState({
@@ -27,8 +31,22 @@ const UserManagement = () => {
     const adminInfo = JSON.parse(localStorage.getItem('adminInfo'));
 
     useEffect(() => {
+        socket.on('update-user-status', ({ userId, isOnline }) => {
+            // Update local state with the user's new status
+            setUsers((prevUsers) =>
+                prevUsers.map((user) =>
+                    user._id === userId ? { ...user, isOnline } : user
+                )
+            );
+        });
+
+        return () => {
+            socket.off('update-user-status');
+        };
+    }, []);
+
+    useEffect(() => {
         fetchUsers();
-        initializeAdminChats();
     }, []);
 
     const fetchUsers = async () => {
@@ -110,6 +128,7 @@ const UserManagement = () => {
             });
 
             setLoading(false)
+            initializeAdminChats();
             fetchUsers();
         } catch (error) {
             message.error(error.response.data.error, 2);
@@ -124,20 +143,20 @@ const UserManagement = () => {
                     Authorization: `Bearer ${adminInfo?.token}`,
                 },
             };
-            
+
             // Set request body to `null` if no data needs to be sent
             await axios.post(`/api/chat/initialize-admin-chats`, {}, config);
-            
+
             console.log("Admin created chat with all users");
         } catch (error) {
             console.log("Chat Creation failed with admin and all users", error);
         }
     };
-    
+
 
     return (
         <div className="min-h-screen p-0 bg-gray-300">
-            <AdminNavbar/>
+            <AdminNavbar />
 
             {/* User Registration Form */}
             <form
@@ -195,13 +214,13 @@ const UserManagement = () => {
                     type="submit"
                     className="w-full py-2 mt-4 max-md:text-xs bg-green-600 text-white rounded font-semibold hover:bg-blue-700 transition duration-200"
                 >
-                    {loading? <Spin size='small'/>: "Register User"}
+                    {loading ? <Spin size='small' /> : "Register User"}
                 </button>
             </form>
 
             {/* Registered Users List */}
             <div className='p-8'>
-            <UserList users={users} setUsers={setUsers} fetchUsers={fetchUsers} />
+                <UserList users={users} setUsers={setUsers} fetchUsers={fetchUsers} />
             </div>
         </div>
     );

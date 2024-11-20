@@ -4,7 +4,7 @@ const cloudinary = require('../config/cloudinary');
 const multer = require('multer');
 const protect = require("../middleware/authMiddleware");
 const { allMessages, sendMessage, deleteMessage, deleteMultipleMessages, markAsDelivered, markAsSeen } = require("../controllers/messageController");
-const { fetchNotification, deleteNotificationsForChat } = require("../controllers/notificationController");
+const { fetchNotification, deleteNotificationsForChat, deleteNotificationByMessageId } = require("../controllers/notificationController");
 
 
 const router = express.Router();
@@ -34,6 +34,7 @@ router.put("/delivered/:messageId", protect, markAsDelivered);
 router.put("/seen/:messageId", protect, markAsSeen);
 router.get('/fetch-notification/:id',fetchNotification);
 router.delete("/delete-notification/:chatId", protect, deleteNotificationsForChat);
+router.delete('/notification/:id',protect,deleteNotificationByMessageId);
 
 module.exports = router;
 

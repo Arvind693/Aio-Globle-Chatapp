@@ -89,8 +89,16 @@ const UserList = ({ users, setUsers, fetchUsers }) => {
                 {users.map((user) => (
                     <div key={user._id} className="bg-gray-50 p-4 rounded-lg shadow-md">
                         <div className="flex items-center justify-between">
-                            <img src={user.profileImage || 'https://icon-library.com/images/anonymous-avatar-icon/anonymous-avatar-icon-25.jpg'}
-                                alt={user.name} className="h-8 w-8 rounded-full" />
+                            <div className='flex gap-1 items-center'>
+                                <img src={user.profileImage || 'https://icon-library.com/images/anonymous-avatar-icon/anonymous-avatar-icon-25.jpg'}
+                                    alt={user.name} className="h-8 w-8 rounded-full"
+                                />
+                                <div>
+                                    <p className='text-10px'>Username: {user.userName}</p>
+                                    <p className='text-10px'>Password: {user.password}</p>
+                                </div>
+                                {user.isOnline? <p>Online</p>:<p>Offline</p>}
+                            </div>
                             <h5 className="text-sm font-semibold">{user.name}</h5>
                         </div>
                         <div className="mt-4">
@@ -120,7 +128,7 @@ const UserList = ({ users, setUsers, fetchUsers }) => {
                             >
                                 Save Permissions
                             </button>
-                        </div> 
+                        </div>
 
                         <div className="mt-4">
                             <h6 className="font-medium text-sm text-gray-700">Allowed Contacts</h6>

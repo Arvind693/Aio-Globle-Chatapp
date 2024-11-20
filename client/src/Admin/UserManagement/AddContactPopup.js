@@ -10,7 +10,7 @@ const AddContactPopup = ({ visible, onClose, userId, onContactAdded }) => {
     const [error,setError] = useState('');
     const [loading,setLoading] = useState(false);
     const {chats,setChats, setSelectedChat} = ChatState();
-    const adminInfo = JSON.parse(localStorage.getItem('adminInfo'));
+    const adminInfo = JSON.parse(localStorage.getItem('adminInfo'));   
 
 
     // Search user functionality
@@ -30,8 +30,9 @@ const AddContactPopup = ({ visible, onClose, userId, onContactAdded }) => {
                 };
 
                 const { data } = await axios.get(`/api/admin/search?q=${searchTerm}`, config);
+                const filteredResults = data.data.filter(user => user._id !== userId);
 
-                setSearchResults(data.data);
+                setSearchResults(filteredResults);  
                 setLoading(false);
             } catch (err) {
                 setLoading(false);
