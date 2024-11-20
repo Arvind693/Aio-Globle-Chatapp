@@ -177,6 +177,7 @@ const getAllUsers = async (req, res) => {
             password: 1, 
             name: 1, 
             userName: 1,
+            isOnline:1,
             role: 1,
             profileImage: 1,
             permissions: 1,

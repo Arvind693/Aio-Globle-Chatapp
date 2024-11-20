@@ -8,10 +8,9 @@ const UserList = ({ users, setUsers, fetchUsers }) => {
     const [isAddContactPopupVisible, setIsAddContactPopupVisible] = useState(false);
     const [selectedUserId, setSelectedUserId] = useState(null);
     const [selectedPermissions, setSelectedPermissions] = useState({});
-    const [isSaveButtonEnabled, setIsSaveButtonEnabled] = useState({}); // Track button state for each user
+    const [isSaveButtonEnabled, setIsSaveButtonEnabled] = useState({}); 
 
     useEffect(() => {
-        // Initialize selectedPermissions based on the current users' permissions data
         const initialPermissions = users.reduce((acc, user) => {
             acc[user._id] = user.permissions;
             return acc;

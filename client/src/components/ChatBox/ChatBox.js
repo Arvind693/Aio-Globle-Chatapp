@@ -292,7 +292,6 @@ const ChatBox = () => {
   const handleLeaveChat = () => {
     if (chatId && socketConnected) {
       socket.emit('leave chat', chatId);
-      console.log(`User left chat room: ${chatId}`);
     }
   };
   useEffect(() => {

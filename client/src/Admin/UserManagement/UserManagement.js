@@ -30,6 +30,7 @@ const UserManagement = () => {
     });
     const adminInfo = JSON.parse(localStorage.getItem('adminInfo'));
 
+    console.log("users:",users)
     useEffect(() => {
         socket.on('update-user-status', ({ userId, isOnline }) => {
             // Update local state with the user's new status
@@ -43,7 +44,7 @@ const UserManagement = () => {
         return () => {
             socket.off('update-user-status');
         };
-    }, []);
+    }, [socket]);
 
     useEffect(() => {
         fetchUsers();

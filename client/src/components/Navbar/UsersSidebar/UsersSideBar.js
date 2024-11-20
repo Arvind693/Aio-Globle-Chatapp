@@ -42,6 +42,24 @@ const Sidebar = () => {
     }
   }, []);
 
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  const fetchUsers = async () => {
+    try {
+      const response = await axios.get('/api/admin/users');
+      setOnlineUsers(
+        response.data.data.reduce((acc, user) => {
+          acc[user._id] = { isOnline: user.isOnline };
+          return acc;
+        }, {})
+      );
+    } catch (error) {
+      console.error('Error fetching users:', error);
+    }
+  };
+
   // Fetch the chats from the API
   const fetchChats = async () => {
     setLoading(true);
@@ -163,24 +181,16 @@ const Sidebar = () => {
                     {getNotificationCount(chat)}
                   </span>
                 )}
-
-                {/* Online/Offline Status */}
-                {!chat?.isGroupChat && (
-                  <FaCircle
-                    className={`mr-2 text-sm ${isUserOnline(
-                      chat?.users?.find((u) => u._id !== loggedUser?._id)?._id
-                    )
-                      ? 'text-green-500'
-                      : 'text-red-500'
-                      }`}
-                  />
-                )}
-
                 {/* Profile Image */}
                 <div className="relative">
                   <div
-                    className={`h-10 w-10 max-md:w-6 max-md:h-6 max-md:border-2 rounded-full border-4 
-                      ${isSelectedChat(chat) ? 'border-blue-500' : 'border-green-400'}
+                    className={`h-10 w-10 max-md:w-6 max-md:h-6 max-md:border-2 rounded-full border-2 
+                      ${isSelectedChat(chat) ? 'border-blue-600' : 'border-blue-400'}
+                      ${isUserOnline(
+                      chat?.users?.find((u) => u._id !== loggedUser?._id)?._id
+                    )
+                        ? 'border-green-500 animate-borderPulse'
+                        : ''} 
                       overflow-hidden flex items-center justify-center`}
                   >
                     {chat?.isGroupChat ? (
