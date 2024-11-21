@@ -16,6 +16,9 @@ const Navbar = () => {
     const [openAutoResponseSidebar, setOpenAutoResponseSidebar] = useState(false);
 
     const fetchAllNotifications = async () => {
+        if(!user._id){
+            return;
+        }
         try {
             const response = await axios.get(`/api/message/fetch-notification/${user._id}`);
             setNotification(response.data.notifications);

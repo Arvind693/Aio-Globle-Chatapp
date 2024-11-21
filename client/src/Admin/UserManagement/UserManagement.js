@@ -5,13 +5,11 @@ import io from 'socket.io-client';
 import { message, Spin } from 'antd';
 import UserList from '../UserManagement/UserList';
 import AdminNavbar from '../AdminNavbar/AdminNavbar';
-import { ChatState } from '../../Context/ChatProvider';
 
 const ENDPOINT = process.env.NODE_ENV === 'production' ? 'https://aio-globle-chatapp.onrender.com' : 'http://localhost:5000';
 let socket = io(ENDPOINT);
 
 const UserManagement = () => {
-    const { user } = ChatState();
     const [users, setUsers] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [searchResults, setSearchResults] = useState([]);
@@ -30,6 +28,7 @@ const UserManagement = () => {
         },
     });
     const adminInfo = JSON.parse(localStorage.getItem('adminInfo'));
+    const admin = adminInfo?.user;
 
     useEffect(() => {
         socket.on('update-user-status', ({ userId, isOnline }) => {
@@ -54,7 +53,7 @@ const UserManagement = () => {
         try {
             const response = await axios.get('/api/admin/users');
             const filteredUsers = response.data.data.filter(
-                (u) => u._id !== user?._id
+                (u) => u._id !== admin?._id
             );
             setUsers(filteredUsers);
         } catch (error) {

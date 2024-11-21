@@ -25,7 +25,7 @@ const AdminNavbar = () => {
     ];
 
     return (
-        <div className="sticky top-0 w-full">
+        <div className="sticky top-0 w-full z-50">
             <header className="bg-gradient-to-r from-white via-pink-400 to-purple-600 text-white py-4 px-6 flex items-center justify-between shadow-md sticky top-0 w-full z-50">
                 <div className="flex items-center tracking-wider cursor-pointer" onClick={() => navigate('/admin_dashboard')}>
                     {/* Logo/Brand Name */}

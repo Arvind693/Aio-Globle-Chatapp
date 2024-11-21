@@ -28,7 +28,7 @@ const ChatPage = () => {
   }, [user]);
   
   return (
-    <div>
+    <div className='w-full'>
       {user ? (
         <div className="chatPageMainContainer">
           <div>

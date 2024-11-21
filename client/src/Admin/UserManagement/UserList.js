@@ -8,7 +8,7 @@ const UserList = ({ users, setUsers, fetchUsers }) => {
     const [isAddContactPopupVisible, setIsAddContactPopupVisible] = useState(false);
     const [selectedUserId, setSelectedUserId] = useState(null);
     const [selectedPermissions, setSelectedPermissions] = useState({});
-    const [isSaveButtonEnabled, setIsSaveButtonEnabled] = useState({}); 
+    const [isSaveButtonEnabled, setIsSaveButtonEnabled] = useState({});
 
     useEffect(() => {
         const initialPermissions = users.reduce((acc, user) => {
@@ -90,13 +90,15 @@ const UserList = ({ users, setUsers, fetchUsers }) => {
                         <div className="flex items-center justify-between">
                             <div className='flex gap-1 items-center'>
                                 <img src={user.profileImage || 'https://icon-library.com/images/anonymous-avatar-icon/anonymous-avatar-icon-25.jpg'}
-                                    alt={user.name} className="h-8 w-8 rounded-full"
+                                    alt={user.name} className={`h-10 w-10 max-md:w-6 max-md:h-6 max-md:border-2 rounded-full border-2 
+                                            ${user.isOnline
+                                            ? 'border-green-500 animate-borderPulse'
+                                            : ''}`}
                                 />
                                 <div>
                                     <p className='text-10px'>Username: {user.userName}</p>
-                                    <p className='text-10px'>Password: {user.password}</p>
+                                    <p className='text-10px'>Password: {user.password}</p>    
                                 </div>
-                                {user.isOnline? <p>Online</p>:<p>Offline</p>}
                             </div>
                             <h5 className="text-sm font-semibold">{user.name}</h5>
                         </div>
