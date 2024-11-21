@@ -79,12 +79,14 @@ const ChatBox = () => {
           return prevNotifications;
         });
       });
+
       return () => {
         socket.removeAllListeners();
+        socket.disconnect();
         clearTimeout(typingTimeout);
       };
     }
-  }, [user]);
+  }, [user,selectedChat]);
 
   useEffect(() => {
     if (!selectedChat || !socketConnected) return;
@@ -95,10 +97,11 @@ const ChatBox = () => {
     });
   }, [selectedChat, messages, socketConnected]);
 
+
   useEffect(() => {
     socket.on('messageSeen', ({ messageId, userId }) => {
       setMessages((prevMessages) =>
-        prevMessages.map((msg) =>
+        prevMessages.map((msg) =>    
           msg._id === messageId ? { ...msg, seen: true } : msg
         )
       );
