@@ -29,7 +29,7 @@ const Navbar = () => {
 
     useEffect(() => {
         fetchAllNotifications();
-    }, [user, notification])
+    }, [user])
 
     const handleToggleAutoResponseSidebar = () => {
         setOpenAutoResponseSidebar(prevState => !prevState);
@@ -37,7 +37,7 @@ const Navbar = () => {
 
     const handleToggleProfile = () => {
         setToggleProfile(!toggleProfile);
-    };
+    }; 
 
     const handleToggleNotifications = () => {
         setShowNotifications(!showNotifications);

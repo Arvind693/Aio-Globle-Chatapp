@@ -1,4 +1,4 @@
-import React, { useState,useEffect, } from 'react';
+import React, {useEffect, } from 'react';
 import Navbar from '../components/Navbar/Navbar';
 import Sidebar from '../components/Navbar/UsersSidebar/UsersSideBar';
 import ChatBox from '../components/ChatBox/ChatBox';
@@ -6,35 +6,18 @@ import WelcomePage from '../components/WelcomePage/WelcomePage'; // Import Welco
 import './ChatPage.css';
 import { ChatState } from '../Context/ChatProvider';
 import AdminNavbar from '../Admin/AdminNavbar/AdminNavbar';
-import io from 'socket.io-client';
-
-const ENDPOINT = process.env.NODE_ENV === 'production' ? 'https://aio-globle-chatapp.onrender.com' : 'http://localhost:5000';
-let socket;
 
 const ChatPage = () => {
-  const { user, selectedChat } = ChatState();
-
-  useEffect(() => {
-    if (user && user._id) {
-      if (!socket) {
-        socket = io(ENDPOINT);
-        socket.emit("setup", user._id);
-        return () => {
-          socket.disconnect();
-          socket = null; 
-        };
-      }
-    }
-  }, [user]);
+  const { user, selectedChat} = ChatState();
   
   return (
-    <div className='w-full'>
+    <div className='w-full border-2'> 
       {user ? (
         <div className="chatPageMainContainer">
           <div>
             {user.role==="Admin" ?<div className="relative z-50"><AdminNavbar /></div>: <Navbar />}
           </div>
-          <div className="sidebarAndChatboxContainer flex">
+          <div className="sidebarAndChatboxContainer flex ">
             <Sidebar />
             {/* Conditionally render WelcomePage or ChatBox */}
             {selectedChat ? (

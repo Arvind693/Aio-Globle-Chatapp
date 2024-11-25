@@ -7,11 +7,14 @@
     box-sizing: border-box;     
     overflow: hidden;        
   }
-  
+  .mainChatPageContainer {
+    width: 100%; 
+  }
  
   .sidebarAndChatboxContainer {
     display: flex;
     flex: 1;                  
     height: 100%;            
     overflow: hidden;    
+    width: 100%;
   }

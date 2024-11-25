@@ -1,4 +1,5 @@
 const Notification = require('../models/noificationModel');
+const Message =require('../models/messageModel');
 
 
 const fetchNotification = async (req, res) => {
@@ -24,7 +25,6 @@ const deleteNotificationsForChat = async (req, res) => {
     const receiverId = req.user._id;
   
     try {
-      // Delete all notifications where chat is chatId and receiver is receiverId
       const result = await Notification.deleteMany({
         chat: chatId,
         receiver: receiverId,
@@ -41,23 +41,20 @@ const deleteNotificationsForChat = async (req, res) => {
 
   // Controller to delete a single notification
   const deleteNotificationByMessageId = async (req, res) => {
-    const { messageId } = req.params;
-  
+    const messageId = req.params.id;
     try {
-      // Find and delete the notification associated with the message ID
-      const deletedNotification = await Notification.findOneAndDelete({ chat: messageId });
-  
+      const message = await Message.findById(messageId);
+      const chatId = message.chat;
+      const deletedNotification = await Notification.findOneAndDelete({ chat: chatId });
       if (!deletedNotification) {
-        return res.status(404).json({ message: 'Notification not found' });
+        return res.status(200).json({ message: 'No notification found for this message.' });
       }
-  
       res.status(200).json({ message: 'Notification deleted successfully' });
     } catch (error) {
       console.error('Error deleting notification:', error);
       res.status(500).json({ message: 'Internal Server Error', error: error.message });
     }
   };
-  
 
 
 module.exports = { fetchNotification,deleteNotificationsForChat,deleteNotificationByMessageId };

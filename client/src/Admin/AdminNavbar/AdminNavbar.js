@@ -79,7 +79,7 @@ const AdminNavbar = () => {
 
             {/* Mobile Navbar */}
             {isNavbarOpen && (
-                <nav className="md:hidden bg-gray-600 text-white p-4 space-y-4 ">
+                <nav className="absolute md:hidden bg-gray-600 text-white p-4 space-y-4 ">
                     {menuItems.map(item => (
                         <button
                             key={item.key}

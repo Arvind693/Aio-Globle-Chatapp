@@ -24,9 +24,9 @@ const MessageInput = ({
   return (
     <form
       onSubmit={sendMessage}
-      className="p-4 bg-gray-200 flex items-center rounded-md shadow-lg"
+      className="p-4 bg-gray-200 flex items-center rounded-md shadow-lg" 
     >
-      <div className="flex items-center w-full rounded-l-lg bg-gray-100">
+      <div className="flex items-center rounded-l-lg bg-gray-100">
         <input
           type="text"
           value={newMessage}

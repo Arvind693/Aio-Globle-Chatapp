@@ -1,22 +1,18 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { FaTrash } from 'react-icons/fa';
 import SendingMessageAnimation from '../Animations/SendingMessageAnimation';
 import ChatTypingLoader from '../ChatTypingLoader/ChatTypingLoader';
 import { ChatState } from '../../Context/ChatProvider';
 import { Spin } from 'antd';
+import ImageModal from '../Animations/ImageModal';
 
-const MessageList = ({
-    messages,
-    user,
-    isTyping,
-    hoveredMessage,
-    setHoveredMessage,
-    handleDeleteMessage,
-    handleImageClick,
-    loading,
-}) => {
-    const { selectedChat } = ChatState();
+const MessageList = ({ messages, isTyping, hoveredMessage, setHoveredMessage, handleDeleteMessage, loading }) => {
+    const { user, selectedChat } = ChatState();
+    const [isImageModalOpen, setIsImageModalOpen] = useState(false);
+    const [selectedImage, setSelectedImage] = useState(null);
     const messagesEndRef = useRef(null);
+
+    const chatId = selectedChat ? selectedChat._id : null;
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
@@ -36,20 +32,26 @@ const MessageList = ({
         return new Date(dateString).toLocaleTimeString(undefined, options);
     };
 
+    const handleImageClick = (imageUrl) => {
+        setSelectedImage(imageUrl);
+        setIsImageModalOpen(true);
+    };
+    const closeImageModal = () => {
+        setIsImageModalOpen(false);
+    };
     return (
         <div className="flex-1 overflow-y-auto p-2 md:p-4 bg-transparent h-full mb-2 md:mb-5 pb-10">
             {loading ? (
                 <div className="w-full h-full flex items-center justify-center">
                     <div><Spin className='custom-spin' style={{ color: '#1890ff', fontSize: '32px' }} /></div>
                 </div>
-            ) : messages.length === 0 ? (
+            ) : !messages[chatId] || messages[chatId].length === 0 ? (
                 <p className=" text-center text-gray-500">No messages yet.</p>
             ) : (
                 <>
-                    {messages.map((msg, index) => {
+                    {messages[chatId].map((msg, index) => {
                         const isNewDay =
-                            index === 0 || formatDate(msg.createdAt) !== formatDate(messages[index - 1]?.createdAt);
-
+                            index === 0 || formatDate(msg.createdAt) !== formatDate(messages[chatId][index - 1]?.createdAt);
                         return (
                             <div key={msg._id || msg.tempId}>
                                 {isNewDay && (
@@ -138,6 +140,7 @@ const MessageList = ({
                     <div ref={messagesEndRef} />
                 </>
             )}
+            {isImageModalOpen && <ImageModal imageUrl={selectedImage} onClose={closeImageModal} />}
         </div>
     );
 };

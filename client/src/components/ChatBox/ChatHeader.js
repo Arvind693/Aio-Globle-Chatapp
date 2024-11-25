@@ -1,7 +1,22 @@
 import React from 'react';
 import { MdCameraAlt } from 'react-icons/md';
+import { ChatState } from '../../Context/ChatProvider';
 
-const ChatHeader = ({ selectedChat, handleScreenShare, handleScreenshot, isScreenShareOpen, getProfileImage, getChatName, setUserDetailsModal }) => {
+const ChatHeader = ({ handleScreenShare, handleScreenshot, isScreenShareOpen,setUserDetailsModal }) => {
+  const {selectedChat,user} = ChatState();
+
+  const getChatName = () => {
+    return selectedChat.isGroupChat
+      ? selectedChat.chatName
+      : selectedChat.users.find((u) => u._id !== user._id)?.name || 'Chat';
+  };
+  const getProfileImage = () => {
+    if (selectedChat.isGroupChat) {
+      return selectedChat.groupImage || 'https://icon-library.com/images/anonymous-avatar-icon/anonymous-avatar-icon-25.jpg';
+    }
+    const otherUser = selectedChat.users.find((u) => u._id !== user._id);
+    return otherUser.profileImage || 'https://icon-library.com/images/anonymous-avatar-icon/anonymous-avatar-icon-25.jpg';
+  };
   return (
     <div className="bg-transparent text-white p-4 max-md:p-2 flex items-center justify-between space-x-3 md:space-x-4">
       <div className='flex justify-center items-center gap-1'>

@@ -11,12 +11,13 @@ let socket;
 const Sidebar = () => {
   const [onlineUsers, setOnlineUsers] = useState({});
   const [loggedUser, setLoggedUser] = useState(null);
-  const { selectedChat, setSelectedChat, chats, setChats, user,
-    notification,
-    setNotification,
-  } = ChatState();
+  const { selectedChat, setSelectedChat, chats, setChats, user, notification, setNotification, } = ChatState();
   const [loading, setLoading] = useState(true);
-
+  
+  const [notificationCounts, setNotificationCounts] = useState(() => {
+    const storedCounts = localStorage.getItem("notificationCounts");
+    return storedCounts ? JSON.parse(storedCounts) : {};
+  });
 
   const userInfo = React.useMemo(() => {
     return user?.role === 'Admin'
@@ -28,7 +29,6 @@ const Sidebar = () => {
   useEffect(() => {
     if (user) {
       socket = io(ENDPOINT);
-      // socket.emit("setup", user._id);
       socket.on('update-user-status', ({ userId, isOnline }) => {
         setOnlineUsers((prev) => ({
           ...prev,
@@ -78,29 +78,6 @@ const Sidebar = () => {
     }
   };
 
-  // Fetch notifications for the user
-  const fetchNotifications = async () => {
-    try {
-      const { data } = await axios.get(`/api/message/fetch-notification/${user?._id}`);
-      setNotification((prevNotifications) => {
-        const newNotifications = data.notifications.filter(
-          (newNotification) =>
-            !prevNotifications.some((prevNotification) => prevNotification._id === newNotification._id)
-        );
-        return [...prevNotifications, ...newNotifications];
-      });
-    } catch (error) {
-      console.error('Failed to fetch notifications:', error.message);
-    }
-  };
-
-  // Effect to fetch notifications on mount
-  useEffect(() => {
-    if (user?._id) {
-      fetchNotifications();
-    }
-  }, [user?._id, notification]);
-
   useEffect(() => {
     const storedUserInfo = user?.role === 'Admin'
       ? JSON.parse(localStorage.getItem('adminInfo'))
@@ -109,8 +86,11 @@ const Sidebar = () => {
     fetchChats();
   }, []);
 
+
+
   const handleChatSelect = async (chat) => {
     setSelectedChat(chat);
+
     try {
       const config = {
         headers: {
@@ -119,11 +99,17 @@ const Sidebar = () => {
       };
 
       await axios.delete(`/api/message/delete-notification/${chat._id}`, config);
-
-      // Optionally, update the notification state if you want to remove it locally
       setNotification((prevNotifications) =>
-        prevNotifications.filter((n) => n.chat._id !== chat._id)
+        prevNotifications.filter((n) => n.chat !== chat._id)
       );
+
+      // Remove notifications for the selected chat
+      setNotificationCounts((prev) => {
+        const updatedCounts = { ...prev };
+        delete updatedCounts[chat._id];
+        localStorage.setItem("notificationCounts", JSON.stringify(updatedCounts));
+        return updatedCounts;
+      });
     } catch (error) {
       console.error("Error deleting notifications:", error);
     }
@@ -144,10 +130,17 @@ const Sidebar = () => {
 
   const isSelectedChat = (chat) => selectedChat?._id === chat?._id;
 
-  const getNotificationCount = (chat) => {
-
-    return notification.filter((n) => n.chat._id === chat._id).length;
-  };
+  useEffect(() => {
+    if(!notification){
+      return;
+    }
+    const counts = notification.reduce((acc, notif) => {
+      acc[notif.chat] = (acc[notif.chat] || 0) + 1;
+      return acc;
+    }, {}); 
+    setNotificationCounts(counts);
+    localStorage.setItem("notificationCounts", JSON.stringify(counts));
+  }, [notification]);
 
   const isUserOnline = (userId) => onlineUsers[userId]?.isOnline;
   return (
@@ -176,9 +169,9 @@ const Sidebar = () => {
                 onClick={() => handleChatSelect(chat)}
               >
                 {/* Notification Badge */}
-                {getNotificationCount(chat) > 0 && (
+                {notificationCounts[chat._id] > 0 && (
                   <span className="relative top-0 right-1  bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
-                    {getNotificationCount(chat)}
+                    {notificationCounts[chat._id]}
                   </span>
                 )}
                 {/* Profile Image */}

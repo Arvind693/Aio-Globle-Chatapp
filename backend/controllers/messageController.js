@@ -1,7 +1,5 @@
 const Message = require('../models/messageModel');
-const User = require('../models/userModel');
 const Chat = require('../models/chatModel');
-const { Error } = require('mongoose');
 const cloudinary = require('../config/cloudinary');
 const Notification = require('../models/noificationModel');
 
@@ -25,14 +23,11 @@ const allMessages = async (req, res) => {
 
 
 const sendMessage = async (req, res) => {
-  const { chatId, content } = req.body; // Extract content and chatId from the request body
+  const { chatId, content } = req.body;
   const uploadedFile = req.file ? req.file.path : null;
-
-  // Validate required fields
   if (!chatId) {
     return res.status(400).json({ message: "Chat ID is required" });
   }
-
   if (!content && !uploadedFile) {
     return res
       .status(400)
@@ -47,16 +42,12 @@ const sendMessage = async (req, res) => {
   };
 
   try {
-    // Create the new message
     let message = await Message.create(newMessage);
-
-    // Populate the sender field with specific fields
     message = await Message.populate(message, {
       path: "sender",
       select: "name profileImage",
     });
 
-    // Populate the chat field and its users
     message = await Message.populate(message, {
       path: "chat",
       populate: {
@@ -144,11 +135,9 @@ const deleteMessage = async (req, res) => {
       const publicId = message.file.split('/').pop().split('.')[0];
       await cloudinary.uploader.destroy(`aio-globel_messages_files/${publicId}`);
     }
-
-    // Full deletion if the user is the sender
+    
     if (message.sender.equals(userId)) {
-      await Message.findByIdAndDelete(messageId);
-
+      const deletedMessage = await Message.findByIdAndDelete(messageId);
       // Update the chat to remove this message from the message history
       await Chat.updateOne(
         { _id: message.chat },
@@ -157,7 +146,10 @@ const deleteMessage = async (req, res) => {
 
       // Emit to the whole chat room that the message is deleted for everyone
       if (req.io && message.chat) {
-        req.io.to(message.chat.toString()).emit('message deleted for everyone', { messageId });
+        req.io.emit('message deleted for everyone', {
+          messageId,
+          chatId: deletedMessage.chat,
+        });
       }
 
       return res.status(200).json({ message: 'Message deleted for everyone' });

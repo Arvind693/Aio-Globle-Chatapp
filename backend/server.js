@@ -126,17 +126,17 @@ io.on('connection', (socket) => {
   socket.on('stop typing', (room) => socket.to(room).emit('stop typing'));
 
   socket.on('send message', (newMessage) => {
-    const chatRoom = newMessage.chat._id;
-    socket.to(chatRoom).emit('message received', newMessage);
+    if (!newMessage || !newMessage.chat || !newMessage.chat._id) {
+      console.error('Invalid message format:', newMessage);
+      return;
+    }
+    io.emit('message received', newMessage);
   });
 
   socket.on('markMessageAsSeen', async ({ chatId, messageId, userId }) => {
     try {
-      // Mark the message as seen in the database (optional, if you want persistent state)
       await Message.findByIdAndUpdate(messageId, { seen: true });
-
-      // Emit the seen update to all users in the chat room, excluding the sender
-      socket.to(chatId).emit('messageSeen', { messageId, userId });
+      socket.to(chatId).emit('messageSeen', {chatId, messageId});
     } catch (error) {
       console.error('Error marking message as seen:', error);
     }
