@@ -6,7 +6,6 @@ import { IoIosSend } from "react-icons/io";
 import html2canvas from 'html2canvas';
 import { MdAttachFile } from "react-icons/md";
 import UserDetails from '../UserDetails/UserDetails';
-import ScreenShare from '../../Admin/ScreenShare/ScreenShare';
 import ChatHeader from './ChatHeader';
 import MessageList from './MessageList';
 
@@ -321,10 +320,6 @@ const ChatBox = () => {
     }
     return fileName;
   };
-
-  const handleScreenShare = () => {
-    setIsScreenShareOpen(!isScreenShareOpen);
-  }
   const handleLeaveChat = () => {
     if (chatId && socketConnected) {
       socket.emit('leave chat', chatId);
@@ -343,9 +338,8 @@ const ChatBox = () => {
       {selectedChat && (
         <>
           <ChatHeader
-            handleScreenShare={handleScreenShare}
+            socket={socket}
             handleScreenshot={handleScreenshot}
-            isScreenShareOpen={isScreenShareOpen}
             setUserDetailsModal={setUserDetailsModal}
           />
           <MessageList
@@ -398,11 +392,6 @@ const ChatBox = () => {
         {userDetailsModal && (
           <UserDetails onClose={() => setUserDetailsModal(!userDetailsModal)} />
         )}
-        <ScreenShare
-          socket={socket}
-          isScreenShareOpen={isScreenShareOpen}
-          setIsScreenShareOpen={setIsScreenShareOpen}
-        />
       </div>
     </div>
   );
