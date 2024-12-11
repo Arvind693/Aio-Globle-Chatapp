@@ -1,12 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import io from 'socket.io-client';
+import { CopyOutlined } from '@ant-design/icons';
 
 import { message, Spin } from 'antd';
 import UserList from '../UserManagement/UserList';
 import AdminNavbar from '../AdminNavbar/AdminNavbar';
 
-const ENDPOINT = process.env.NODE_ENV === 'production' ? 'https://aio-globle-chatapp.onrender.com' : 'http://localhost:5000';
+const serverHost = process.env.REACT_APP_SERVER_HOST;
+const ENDPOINT = process.env.NODE_ENV === "production"
+    ? "https://aio-globle-chatapp.onrender.com"
+    : `http://${serverHost}:5000`;
+
 let socket = io(ENDPOINT);
 
 const UserManagement = () => {
@@ -15,6 +20,7 @@ const UserManagement = () => {
     const [searchResults, setSearchResults] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+    const [siteUrl, setSiteUrl] = useState('');
     const [formData, setFormData] = useState({
         name: '',
         userName: '',
@@ -48,7 +54,7 @@ const UserManagement = () => {
     useEffect(() => {
         fetchUsers();
     }, []);
- 
+
     const fetchUsers = async () => {
         try {
             const response = await axios.get('/api/admin/users');
@@ -156,11 +162,58 @@ const UserManagement = () => {
         }
     };
 
+    useEffect(() => {
+        // Get the site URL dynamically based on the environment
+        const url = `http://${serverHost}:3000`;
+        setSiteUrl(url);
+    }, []);
+
+    const handleCopyUrl = () => {
+        // Check if Clipboard API is available
+        if (navigator.clipboard) {
+            // Clipboard API (modern browsers)
+            navigator.clipboard.writeText(siteUrl)
+                .then(() => {
+                    message.success('Site URL copied to clipboard!');
+                })
+                .catch(() => {
+                    message.error('Failed to copy URL using Clipboard API.');
+                });
+        } else {
+            // Fallback: Using document.execCommand (older browsers)
+            const textArea = document.createElement("textarea");
+            textArea.value = siteUrl;
+            document.body.appendChild(textArea);
+            textArea.select();
+            const successful = document.execCommand('copy');
+            document.body.removeChild(textArea);
+    
+            if (successful) {
+                message.success('Site URL copied to clipboard!');
+            } else {
+                message.error('Failed to copy URL using execCommand.');
+            }
+        }
+    };
+
 
     return (
         <div className="min-h-screen p-0 bg-gray-300">
             <AdminNavbar />
-
+            {/* Site URL Section */}
+            <div className="bg-white shadow-lg rounded-lg p-6 mb-10 mt-2 max-w-lg mx-auto max-md:w-72 border border-gray-200 text-center">
+                <h4 className="text-lg font-semibold text-gray-700 mb-4">Share Site URL</h4>
+                <div className="flex items-center justify-between bg-gray-100 p-3 rounded-lg">
+                    <span className="text-gray-700 text-sm truncate">{siteUrl}</span>
+                    <button
+                        onClick={handleCopyUrl}
+                        className="text-blue-600 hover:text-blue-800 ml-4 focus:outline-none"
+                        title="Copy URL"
+                    >
+                        <CopyOutlined />
+                    </button>
+                </div>
+            </div>
             {/* User Registration Form */}
             <form
                 onSubmit={handleRegister}

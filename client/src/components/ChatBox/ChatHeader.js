@@ -9,7 +9,7 @@ const ChatHeader = ({ socket, handleScreenshot, setUserDetailsModal }) => {
   const [otherUserId, setOtherUserId] = useState(null);
   const [remoteStream, setRemoteStream] = useState(null);
   const [isAudioMuted, setIsAudioMuted] = useState(false);
-  const [isVideoCallActive, setIsVideoCallActive] = useState(false);
+  const [isVideoCallActive, setIsVideoCallActive] = useState(false); 
   const [incomingCall, setIncomingCall] = useState(false);
   const [callRejectedMessage, setCallRejectedMessage] = useState(null);
   const [acceptCallHandler, setAcceptCallHandler] = useState(() => null);
@@ -23,7 +23,12 @@ const ChatHeader = ({ socket, handleScreenshot, setUserDetailsModal }) => {
 
   const RINGING_DURATION = 30000;
 
-  // Determine the other user's ID for 1-on-1 chat
+  const peerConfig = {
+    iceServers: [
+      { urls: "stun:stun.l.google.com:19302" }, 
+    ],
+  };
+
   useEffect(() => {
     if (!selectedChat.isGroupChat) {
       const otherUser = selectedChat.users.find((u) => u._id !== user._id);
@@ -83,7 +88,7 @@ const ChatHeader = ({ socket, handleScreenshot, setUserDetailsModal }) => {
 
       setAcceptCallHandler(() => () => {
         clearTimeout(timeout);
-        const remotePeer = new Peer({ initiator: false, trickle: false });
+        const remotePeer = new Peer({ initiator: false, trickle: false, config: peerConfig });
 
         remotePeer.signal(offer);
 
@@ -170,7 +175,7 @@ const ChatHeader = ({ socket, handleScreenshot, setUserDetailsModal }) => {
         video: true,
         audio: true,
       });
-      const localPeer = new Peer({ initiator: true, trickle: false, stream });
+      const localPeer = new Peer({ initiator: true, trickle: false, stream, config: peerConfig, });
 
       localPeer.on("signal", (signal) => {
         socket.emit("admin-send-offer", { offer: signal, userId: otherUserId });
@@ -252,6 +257,7 @@ const ChatHeader = ({ socket, handleScreenshot, setUserDetailsModal }) => {
       initiator: true,
       trickle: false,
       stream: localStreamRef.current,
+      config: peerConfig,
     });
 
     localPeer.on("signal", (signal) => {

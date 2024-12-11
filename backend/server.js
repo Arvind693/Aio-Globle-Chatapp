@@ -13,27 +13,30 @@ const { notFound, errorHandler } = require('./middleware/errorMiddleware');
 const Message = require('./models/messageModel');
 const path = require('path');
 const User = require('./models/userModel');
+const os = require('os');
 
 // Initialize express app
 const app = express();
 
 // Middlewares
-app.use(cors());
-app.use(express.json());
+const REACT_APP_CLIENT_URL = process.env.REACT_APP_CLIENT_URL;
+
+app.use(cors({ origin:REACT_APP_CLIENT_URL, credentials: true }));  
+app.use(express.json()); 
 
 // MongoDB connection
 dbConnect();
 
 // Socket.io Active Users
-const activeUsers = {};
+const activeUsers = {}; 
 
 // Create an HTTP server and attach socket.io
-const server = http.createServer(app);
+const server = http.createServer(app);  
 
-// Initialize socket.io with the server
+// Initialize socket.io with the server   
 const io = new Server(server, {
   cors: {
-    origin: ['https://aio-globel-chatapp.onrender.com', 'http://localhost:3000'],
+    origin: ['https://aio-globel-chatapp.onrender.com', REACT_APP_CLIENT_URL],
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
   },
 });
@@ -136,22 +139,62 @@ io.on('connection', (socket) => {
   socket.on('markMessageAsSeen', async ({ chatId, messageId, userId }) => {
     try {
       await Message.findByIdAndUpdate(messageId, { seen: true });
-      socket.to(chatId).emit('messageSeen', {chatId, messageId});
+      socket.to(chatId).emit('messageSeen', { chatId, messageId });
     } catch (error) {
       console.error('Error marking message as seen:', error);
     }
   });
-  socket.on("start screen share", ({ userId, stream }) => {
-    socket.broadcast.emit("screen sharing started", { userId, stream });
+
+  // -----------------START SCREEN SHARING LOGIC ----------------------------
+  socket.on('request-user-screen', ({ userId }) => {
+    console.log(`Admin requesting screen from user: ${userId}`);
+    io.to(userId).emit('admin-request-screen');
   });
 
-  socket.on("stop screen share", ({ userId }) => {
-    socket.broadcast.emit("screen sharing stopped", { userId });
+  socket.on('admin-send-offer', ({ offer, userId }) => {
+    console.log(`Admin sending offer to user: ${userId}`);
+    io.to(userId).emit('admin-send-offer', { offer });
   });
+
+  socket.on('user-send-answer', ({ answer, adminId }) => {
+    console.log(`User sending answer to admin: ${adminId}`);
+    io.to(adminId).emit('receive-answer', { answer });
+  });
+  // ---------------------------END SCREEN SHARE LOGIC-----------------------------
+  socket.on("start-video-call", ({ offer, userId, myId, myName }) => {
+    io.to(userId).emit("incoming-video-call", { offer, callerId: myId, callerName:myName });
+  });
+
+  // Send answer to caller
+  socket.on("send-video-answer", ({ answer, callerId }) => {
+    io.to(callerId).emit("receive-video-answer", { answer });
+  });
+
+  // Exchange ICE candidates
+  socket.on("send-ice-candidate", ({ candidate, userId }) => {
+    io.to(userId).emit("receive-ice-candidate", { candidate });
+  });
+
+  // End video call
+  socket.on("end-video-call", ({ userId }) => {
+    io.to(userId).emit("call-ended");
+  });
+  socket.on("call-timeout", ({ userId }) => {
+    io.to(userId).emit("call-timed-out", { message: "The caller stopped the call due to timeout." });
+  });
+  
+  socket.on("reject-video-call", ({ callerId }) => {
+    io.to(callerId).emit("call-rejected", { callerId, reason: "User is busy" });
+  });
+
+  socket.on("call-accepted",({callerId})=>{
+    io.to(callerId).emit("call-accepted-by-other-user");
+  });
+
 
   socket.on('logout', ({ userId }) => {
-      io.emit('update-user-status', { userId, isOnline: false });
-      updateUserOnlineStatus(userId, false); 
+    io.emit('update-user-status', { userId, isOnline: false });
+    updateUserOnlineStatus(userId, false);
   });
 
   socket.on('disconnect', () => {
@@ -168,7 +211,9 @@ io.on('connection', (socket) => {
 
 
 // Start the server with socket.io
-const PORT = process.env.PORT || 5000;
-server.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+
+const PORT = process.env.PORT || 5000; 
+const SERVER_HOST = process.env.SERVER_HOST;
+server.listen(PORT, SERVER_HOST, () => {
+  console.log(`Server is running on http://${SERVER_HOST}:${PORT}`);
 });

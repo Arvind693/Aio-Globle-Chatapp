@@ -5,7 +5,11 @@ import { ChatState } from '../../../Context/ChatProvider';
 import { FaCrown, FaCircle } from "react-icons/fa";
 import io from 'socket.io-client';
 
-const ENDPOINT = process.env.NODE_ENV === 'production' ? 'https://aio-globle-chatapp.onrender.com' : 'http://localhost:5000';
+const serverHost = process.env.REACT_APP_SERVER_HOST;
+
+const SOCKET_ENDPOINT = process.env.NODE_ENV === "production"
+    ? "wss://aio-globle-chatapp.onrender.com"
+    : `ws://${serverHost}:5000`;
 let socket;
 
 const Sidebar = () => {
@@ -28,7 +32,7 @@ const Sidebar = () => {
   // Initialize socket connection
   useEffect(() => {
     if (user) {
-      socket = io(ENDPOINT);
+      socket = io(SOCKET_ENDPOINT);
       socket.on('update-user-status', ({ userId, isOnline }) => {
         setOnlineUsers((prev) => ({
           ...prev,

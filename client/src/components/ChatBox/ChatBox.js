@@ -10,12 +10,19 @@ import ChatHeader from './ChatHeader';
 import MessageList from './MessageList';
 
 
-const ENDPOINT = process.env.NODE_ENV === 'production' ? 'https://aio-globle-chatapp.onrender.com' : 'http://localhost:5000';
+const serverHost = process.env.REACT_APP_SERVER_HOST;
+const ENDPOINT = process.env.NODE_ENV === "production"
+  ? "https://aio-globle-chatapp.onrender.com"
+  : `http://${serverHost}:5000`;
+
+const SOCKET_ENDPOINT = process.env.NODE_ENV === "production"
+  ? "wss://aio-globle-chatapp.onrender.com" // For secure WebSocket
+  : `ws://${serverHost}:5000`;
 let socket, selectedChatCompare;
 let typingTimeout;
 
 const ChatBox = () => {
-  const { selectedChat, user, notification,setNotification } = ChatState(); 
+  const { selectedChat, user, notification, setNotification } = ChatState();
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(false);
@@ -39,7 +46,7 @@ const ChatBox = () => {
 
   useEffect(() => {
     if (user) {
-      socket = io(ENDPOINT);
+      socket = io(SOCKET_ENDPOINT);
       socket.emit("setup", user._id);
       socket.on("connected", () => setSocketConnected(true));
       socket.on("typing", () => setIsTyping(true));
@@ -53,7 +60,7 @@ const ChatBox = () => {
     }
   }, [user]);
 
-  
+
 
   useEffect(() => {
     if (!socket) return;
@@ -63,16 +70,16 @@ const ChatBox = () => {
         console.error("Invalid message format received:", newMessage);
         return;
       }
-  
-      const incomingChatId = newMessage.chat._id;  
-  
+
+      const incomingChatId = newMessage.chat._id;
+
       setMessages((prevMessages) => {
-        const updatedMessages = { ...prevMessages }; 
+        const updatedMessages = { ...prevMessages };
         if (!messages[incomingChatId]?.length && selectedChat?._id !== incomingChatId) {
           console.log("Message ignored because messages state is empty or chat is not selected.");
           return updatedMessages; // Return the current state unchanged
         }
-  
+
         if (updatedMessages[incomingChatId]) {
           if (!updatedMessages[incomingChatId].some((msg) => msg._id === newMessage._id)) {
             updatedMessages[incomingChatId].push(newMessage);
@@ -80,10 +87,10 @@ const ChatBox = () => {
         } else {
           updatedMessages[incomingChatId] = [newMessage];
         }
-  
+
         return updatedMessages;
       });
-  
+
       if (selectedChat?._id === incomingChatId) {
         scrollToBottom(); // Scroll only if the incoming message belongs to the selected chat
       }
@@ -111,7 +118,7 @@ const ChatBox = () => {
       socket.off("message received", handleMessageReceived);
       socket.off("message deleted for everyone", handleDeletedForEveryone);
     };
-  }, [selectedChat,socket,messages]);
+  }, [selectedChat, socket, messages]);
 
   // Automatically mark messages as seen when the user views the chat
   useEffect(() => {
@@ -331,7 +338,7 @@ const ChatBox = () => {
       socket.removeAllListeners();
       clearTimeout(typingTimeout);
     };
-  }, [selectedChat]); 
+  }, [selectedChat]);
 
   return (
     <div className="h-full w-full bg-gradient-to-r from-gray-100 to-gray-300 flex flex-col">
@@ -354,7 +361,7 @@ const ChatBox = () => {
       )}
 
       <div>
-        <form 
+        <form
           onSubmit={sendMessage}
           className="p-4 max-md:p-4 bg-transparent flex justify-center max-md:mb-4"
         >
@@ -368,7 +375,7 @@ const ChatBox = () => {
               className="text-white flex-1 p-2 md:p-3 bg-transparent focus:outline-none shadow-inner text-base max-md:text-12px"
             />
             <label htmlFor="file-upload" className="cursor-pointer bg-transparent text-gray-400 p-2">
-              <MdAttachFile size={window.innerWidth < 640 ? 20 : 25} />   
+              <MdAttachFile size={window.innerWidth < 640 ? 20 : 25} />
             </label>
             <input
               id="file-upload"
@@ -381,7 +388,7 @@ const ChatBox = () => {
             type="submit"
             className="h-14 max-md:h-10 bg-green-600 max-md:text-l text-white px-3 max-md:p-2 rounded-r-lg hover:bg-green-800 shadow-lg"
           >
-            <IoIosSend size={window.innerWidth < 640 ? 20 : 25}  />
+            <IoIosSend size={window.innerWidth < 640 ? 20 : 25} />
           </button>
           {selectedFile && (
             <div className="fixed bottom-20 text-sm text-gray-500 mt-2">

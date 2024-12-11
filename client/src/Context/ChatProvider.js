@@ -6,12 +6,16 @@ import NotificationAudioPath from "../Assets/Notification-Sound/notification-sou
 
 const ChatContext = createContext();
 
+const serverHost = process.env.REACT_APP_SERVER_HOST;
 const ENDPOINT =
   process.env.NODE_ENV === "production"
     ? "https://aio-globle-chatapp.onrender.com"
-    : "http://localhost:5000";
-let socket;
+    : `http://${serverHost}:5000`;
 
+const SOCKET_ENDPOINT = process.env.NODE_ENV === "production"
+    ? "wss://aio-globle-chatapp.onrender.com" // For secure WebSocket
+    : `ws://${serverHost}:5000`;
+let socket;
 const ChatProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [selectedChat, setSelectedChat] = useState(null);
@@ -73,7 +77,7 @@ const ChatProvider = ({ children }) => {
     }
 
     if (!socket) {
-      socket = io(ENDPOINT);
+      socket = io(SOCKET_ENDPOINT);
 
       const handleNotificationReceived = (savedNotification) => {
         setNotification((prevNotifications) =>
@@ -142,6 +146,7 @@ const ChatProvider = ({ children }) => {
   return (
     <ChatContext.Provider
       value={{
+        serverHost,
         user,
         setUser,
         selectedChat,
