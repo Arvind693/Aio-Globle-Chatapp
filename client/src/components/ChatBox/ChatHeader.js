@@ -25,7 +25,12 @@ const ChatHeader = ({ socket, handleScreenshot, setUserDetailsModal }) => {
 
   const peerConfig = {
     iceServers: [
-      { urls: "stun:stun.l.google.com:19302" },
+      { urls: "stun:stun.l.google.com:19302" }, // STUN server
+      {
+        urls: "turn:relay1.expressturn.com:3478", // TURN server URL
+        username: "efZ0K679YF4KIYHP9Z", // TURN server username
+        credential: "NlEVvoIe0QH7LZ2B", // TURN server password
+      },
     ],
   };
 
@@ -396,7 +401,8 @@ const ChatHeader = ({ socket, handleScreenshot, setUserDetailsModal }) => {
             handleRequestUserScreen();
             handleScreenShareToggle();
           }}
-          className="flex max-md:text-10px bg-gradient-to-r from-blue-600 to-red-400 text-white px-3 py-1 rounded-md hover:bg-blue-700"
+          className="relative flex items-center justify-center px-2 py-2 border-1px border-green-500 rounded-md text-green-600 text-sm max-md:text-xs 
+             bg-transparent hover:bg-green-100 shadow-lg hover:shadow-xl"
         >
           Access {getChatName()}'s Screen
         </button>
