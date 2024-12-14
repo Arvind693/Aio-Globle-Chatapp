@@ -232,5 +232,5 @@ const AdminLoginSignUp = () => {
   );
 
 };
-
+ 
 export default AdminLoginSignUp;

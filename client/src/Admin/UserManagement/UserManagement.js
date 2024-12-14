@@ -3,7 +3,7 @@ import axios from 'axios';
 import io from 'socket.io-client';
 import { CopyOutlined } from '@ant-design/icons';
 
-import { message, Spin } from 'antd';
+import { message, Spin, Modal } from 'antd';
 import UserList from '../UserManagement/UserList';
 import AdminNavbar from '../AdminNavbar/AdminNavbar';
 
@@ -33,6 +33,8 @@ const UserManagement = () => {
             canGroupChat: false,
         },
     });
+
+    const [isModalVisible, setIsModalVisible] = useState(false);
     const adminInfo = JSON.parse(localStorage.getItem('adminInfo'));
     const admin = adminInfo?.user;
 
@@ -50,9 +52,10 @@ const UserManagement = () => {
             socket.off('update-user-status');
         };
     }, [socket]);
-
+ 
     useEffect(() => {
         fetchUsers();
+        // initializeAdminChats();  
     }, []);
 
     const fetchUsers = async () => {
@@ -136,10 +139,12 @@ const UserManagement = () => {
                 },
             });
 
-            setLoading(false)
-            initializeAdminChats();
+            setLoading(false);
+            setIsModalVisible(false);
+            initializeAdminChats(); 
             fetchUsers();
         } catch (error) {
+            setLoading(false);
             message.error(error.response.data.error, 2);
         }
     };
@@ -187,13 +192,22 @@ const UserManagement = () => {
             textArea.select();
             const successful = document.execCommand('copy');
             document.body.removeChild(textArea);
-    
+
             if (successful) {
                 message.success('Site URL copied to clipboard!');
             } else {
                 message.error('Failed to copy URL using execCommand.');
             }
         }
+    };
+
+    const showModal = () => {
+        setIsModalVisible(true);
+    };
+
+    // Function to hide the modal
+    const handleCancel = () => {
+        setIsModalVisible(false);
     };
 
 
@@ -207,72 +221,83 @@ const UserManagement = () => {
                     <span className="text-gray-700 text-sm truncate">{siteUrl}</span>
                     <button
                         onClick={handleCopyUrl}
-                        className="text-blue-600 hover:text-blue-800 ml-4 focus:outline-none"
+                        className="px-4 py-2 max-md:text-xs bg-gradient-to-t from-green-500 to-green-600  text-white rounded hover:bg-green-700"
                         title="Copy URL"
                     >
                         <CopyOutlined />
                     </button>
                 </div>
             </div>
-            {/* User Registration Form */}
-            <form
-                onSubmit={handleRegister}
-                className="bg-white shadow-lg rounded-lg p-6 mb-10 mt-2 max-w-lg mx-auto max-md:w-72 border border-gray-200 transition-transform duration-200 hover:shadow-2xl"
-            >
-                <h4 className="text-xl max-md:text-sm font-semibold text-gray-700 mb-4">Register New User</h4>
-                <input
-                    type="text"
-                    name="name"
-                    placeholder="Full Name"
-                    value={formData.name}
-                    onChange={handleChange}
-                    className="w-full px-2 py-1 border-2 text-sm max-md:text-12px  border-green-500 rounded mb-4 max-md:mb-2 outline-none focus:outline-none "
-                    required
-                />
-                <input
-                    type="text"
-                    name="userName"
-                    placeholder="Username"
-                    value={formData.userName}
-                    onChange={handleChange}
-                    className="w-full px-2 py-1 border-2 text-sm max-md:text-12px border-green-500 rounded mb-4 max-md:mb-2 outline-none focus:outline-none "
-                    required
-                />
-                <input
-                    type="password"
-                    name="password"
-                    placeholder="Password"
-                    value={formData.password}
-                    onChange={handleChange}
-                    className="w-full px-2 py-1 border-2 text-sm max-md:text-12px border-green-500 rounded mb-4 max-md:mb-2 outline-none focus:outline-none "
-                    required
-                />
-
-                {/* Permissions Section */}
-                <div className="mb-4">
-                    <label className="text-gray-800 max-md:text-sm font-semibold mb-2 block">Set Permissions:</label>
-                    <div className="grid grid-cols-2 gap-4 max-md:gap-2">
-                        {Object.keys(formData.permissions).map((permission) => (
-                            <label key={permission} className="inline-flex items-center text-sm max-md:text-10px">
-                                <input
-                                    type="checkbox"
-                                    name={permission}
-                                    checked={formData.permissions[permission]}
-                                    onChange={handleChange}
-                                    className="mr-2"
-                                />
-                                {permission.replace('can', 'Can ')}
-                            </label>
-                        ))}
-                    </div>
-                </div>
+            <div className="text-center mb-6 ">
                 <button
-                    type="submit"
-                    className="w-full py-2 mt-4 max-md:text-xs bg-green-600 text-white rounded font-semibold hover:bg-blue-700 transition duration-200"
+                    onClick={showModal}
+                    className="px-4 py-2 max-md:text-xs bg-gradient-to-t from-green-500 to-green-600 text-white rounded hover:bg-green-700 shadow-lg hover:shadow-xl transition-shadow duration-200"
                 >
-                    {loading ? <Spin size='small' /> : "Register User"}
+                    Register New User
                 </button>
-            </form>
+            </div>
+
+            {/* Modal for User Registration */}
+            <Modal
+                title="Register New User"
+                open={isModalVisible}
+                onCancel={handleCancel}
+                footer={null}
+                width={400}
+            >
+                <form onSubmit={handleRegister}>
+                    <input
+                        type="text"
+                        name="name"
+                        placeholder="Full Name"
+                        value={formData.name}
+                        onChange={handleChange}
+                        className="w-full px-2 py-1 border-2 text-sm mb-4 border-green-500 rounded outline-none"
+                        required
+                    />
+                    <input
+                        type="text"
+                        name="userName"
+                        placeholder="Username"
+                        value={formData.userName}
+                        onChange={handleChange}
+                        className="w-full px-2 py-1 border-2 text-sm mb-4 border-green-500 rounded outline-none"
+                        required
+                    />
+                    <input
+                        type="password"
+                        name="password"
+                        placeholder="Password"
+                        value={formData.password}
+                        onChange={handleChange}
+                        className="w-full px-2 py-1 border-2 text-sm mb-4 border-green-500 rounded outline-none"
+                        required
+                    />
+                    <div className="mb-4">
+                        <label className="text-gray-800 font-semibold mb-2 block">Set Permissions:</label>
+                        <div className="grid grid-cols-2 gap-4">
+                            {Object.keys(formData.permissions).map((permission) => (
+                                <label key={permission} className="inline-flex items-center text-sm">
+                                    <input
+                                        type="checkbox"
+                                        name={permission}
+                                        checked={formData.permissions[permission]}
+                                        onChange={handleChange}
+                                        className="mr-2"
+                                    />
+                                    {permission.replace('can', 'Can ')}
+                                </label>
+                            ))}
+                        </div>
+                    </div>
+                    <button
+                        type="submit"
+                        className="w-full py-2 bg-green-600 text-white rounded font-semibold hover:bg-green-700 transition duration-200"
+                    >
+                        {loading ? <Spin size="small" /> : "Register User"} 
+                    </button>
+                </form>
+            </Modal>
 
             {/* Registered Users List */}
             <div className='p-8'>

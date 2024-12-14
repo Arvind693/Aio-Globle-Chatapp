@@ -4,76 +4,9 @@ const generateToken = require('../config/jwtToken');
 const Chat = require('../models/chatModel');
 const cloudinary = require('../config/cloudinary');
 
-
-// Register User or Admin
-const registerUser = async (req, res) => {
-    const { name, userName, password } = req.body;
-
-    // Check required fields
-    if (!name || !userName || !password) {
-        return res.status(400).send({
-            success: false,
-            message: "Please fill all the fields",
-        });
-    }
-
-    try {
-        // Check if the userName already exists
-        const existUser = await User.findOne({ userName });
-        if (existUser) {
-            return res.status(400).send({
-                success: false,
-                message: "User already exists"
-            });
-        }
-
-
-        // Register as regular User with default permissions (limited features)
-        let user = await User.create({
-            name,
-            userName,
-            password,
-            role: "User",
-            permissions: {
-                canMessage: false,
-                canGroupChat: false,
-                canScreenShare: false,
-                canCall: false
-            },
-            profileImage: req.file ? req.file.path : ''
-        });
-
-        // Generate JWT token for the registered user
-        const token = generateToken(user._id);
-
-        // Send response
-        res.status(201).send({
-            success: true,
-            message: `User registered successfully 🥰`,
-            data: {
-                id: user._id,
-                name: user.name,
-                userName: user.userName,
-                role: user.role,
-                profileImage: user.profileImage,
-                permissions: user.permissions // Admin permissions structure for user
-            },
-            token: token
-        });
-    } catch (error) {
-        res.status(500).send({
-            success: false,
-            message: "Error registering user",
-            error: error.message
-        });
-    }
-};
-
-
 // User login controller
 const loginUser = async (req, res) => {
     const { userName, password,role } = req.body;
-
     // Validate if userName and password are provided
     if (!userName || !password) {
         return res.status(400).json({
@@ -273,7 +206,6 @@ const fetchUserPermissions = async (req, res) => {
 
 
 module.exports = {
-    registerUser,
     loginUser,
     searchUsers,
     createChat,

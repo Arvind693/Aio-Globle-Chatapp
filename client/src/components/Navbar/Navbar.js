@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBell, faRobot } from '@fortawesome/free-solid-svg-icons';
+import {faRobot } from '@fortawesome/free-solid-svg-icons';
 import AutoResponseSidebar from '../AutoResponseSidebar/AutoResponseSidebar';
 import UserProfile from '../UserProfile/UserProfile';
-import Notification from '../Notification/Notification'; // Import Notification
 import './Navbar.css';
 import logo1 from '../../Assets/images/aio-globel1.png';
 import { ChatState } from '../../Context/ChatProvider';
@@ -75,28 +74,6 @@ const Navbar = () => {
                 </button>
                 {/* Right Side Icons and Features */}
                 <div className="flex gap-10 max-sm:gap-2 max-sm:ml-2">
-                    {/* Notification Icon */}
-                    <div
-                        className="text-white mr-4 mt-3 max-sm:mt-0 max-sm:mr-1 cursor-pointer relative"
-                        onClick={handleToggleNotifications}
-                    >
-                        <FontAwesomeIcon icon={faBell} className="text-xl max-sm:text-xs" />
-                        {notification.length > 0 && (
-                            <span className="absolute -top-2 right-0 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
-                                {notification.length}
-                            </span>
-                        )}
-                    </div>
-
-                    {/* Notification Component */}
-                    {showNotifications && (
-                        <Notification
-                            notifications={notification}
-                            onClearNotification={handleClearNotification}
-                            onSelectNotification={handleSelectNotification}
-                        />
-                    )}
-
                     {/* User Profile */}
                     <div
                         className="flex items-center space-x-4 cursor-pointer"

@@ -4,11 +4,11 @@ import { FaWindowClose } from "react-icons/fa";
 import { GrUpdate } from "react-icons/gr";
 import { MdDriveFileRenameOutline } from "react-icons/md";
 import { RiDeleteBin5Fill } from "react-icons/ri";
-import { message, Spin } from 'antd';
+import { message, Spin, Modal} from 'antd';
 import axios from 'axios';
 import { FaCrown } from "react-icons/fa";
 
-const EditGroup = ({ onClose }) => {
+const EditGroup = ({groups,setGroups, onClose }) => {
     const { selectedChat, setSelectedChat, user, chats, setChats } = ChatState();
     const [newGroupName, setNewGroupName] = useState('');
     const [toggleInput, setToggleInput] = useState(false);
@@ -59,7 +59,7 @@ const EditGroup = ({ onClose }) => {
 
     // Ensure selectedChat.groupAdmin exists before trying to access _id
     const isAdmin = selectedChat.isGroupChat && selectedChat.groupAdmin && selectedChat.groupAdmin._id === adminInfo.user._id;
-
+    console.log("User Detals:",selectedChat.users.find((u) => u._id !== user._id))
     const chatDetails = selectedChat.isGroupChat
         ? {
             name: selectedChat.chatName,
@@ -70,6 +70,7 @@ const EditGroup = ({ onClose }) => {
         : {
             name: selectedChat.users.find((u) => u._id !== user._id)?.name,
             userName: selectedChat.users.find((u) => u._id !== user._id)?.userName,
+            password:selectedChat.users.find((u) => u._id !== user._id)?.password,
             profileImage: selectedChat.users.find((u) => u._id !== user._id)?.profileImage || '/default-profile.png',
             additionalInfo: selectedChat.users.find((u) => u._id !== user._id)?.status || 'No status available',
             type: 'Individual'
@@ -149,7 +150,7 @@ const EditGroup = ({ onClose }) => {
 
     // Delete Group Functionality
     const handleDeleteGroup = async () => {
-        try {
+        try { 
             const config = {
                 headers: {
                     'Content-Type': 'application/json',
@@ -165,6 +166,9 @@ const EditGroup = ({ onClose }) => {
             onClose();
             setChats(chats.filter(chat => chat._id !== selectedChat._id));
             setSelectedChat(null);
+            if(groups){
+                setGroups(groups.filter((group) => group._id !== selectedChat._id)); 
+            }
         } catch (error) {
             message.error(error.response?.data?.message || 'Failed to delete the group', 2);
         }
@@ -195,6 +199,17 @@ const EditGroup = ({ onClose }) => {
         }
     };
 
+    const confirmRemoveGroup = (userId) => {
+        Modal.confirm({
+            title: 'Are you sure you want to delete this Group?',
+            content: 'This action cannot be undone.',
+            okText: 'Yes',
+            okType: 'danger',
+            cancelText: 'No',
+            onOk: () => handleDeleteGroup(),
+        });
+    };
+
     return (
         <div className="fixed inset-0 w-screen h-screen bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="modal-content w-1/2 max-md:w-auto bg-white p-6 rounded-lg shadow-lg relative">
@@ -205,9 +220,13 @@ const EditGroup = ({ onClose }) => {
                         alt="Profile"
                         className="h-10 w-10 max-md:h-8 max-sm:w-8 rounded-full object-cover shadow-lg shadow-gray-700"
                     />
-                    <div className='flex  gap-1 items-center justify-center'>
-                        <h2 className="text-lg text-green-600 font-semibold">{chatDetails.name}</h2>
-                        <h2 className="text-lg text-green-600 font-semibold">{chatDetails.userName}</h2>
+                    <div className='flex flex-col gap-1 items-center justify-center'>
+                        <h2 className="text-lg max-md:text-12px text-gray-600 font-semibold">{chatDetails.name}</h2>
+                        {chatDetails.type==='Individual' &&(
+                            <div>
+                            <p className="max-md:text-12px text-gray-600 font-semibold">Username: <span className='text-blue-500'>{chatDetails.userName}</span></p>
+                            </div>
+                        )}
 
                         {isAdmin && (
                             <p className='text-2xl cursor-pointer' onClick={() => setToggleInput(!toggleInput)}>{<MdDriveFileRenameOutline />}</p>
@@ -265,7 +284,7 @@ const EditGroup = ({ onClose }) => {
                         {/* Add new user to the group*/}
                         <div>
                             <button
-                                className='bg-green-600 px-2 py-2 flex items-center rounded text-white text-sm max-md:text-10px max-md:h-5 '
+                                className='bg-gray-100 p-1 border-1px border-green-500 rounded text-green-500 text-sm max-md:text-12px '
                                 onClick={() => setToggleAddUser(!toggleAddUser)}>
                                 {toggleAddUser ? 'Close' : 'Add User'}
                             </button>
@@ -309,8 +328,8 @@ const EditGroup = ({ onClose }) => {
                             isAdmin && (
                                 <div className='mt-4'>
                                     <button
-                                        onClick={handleDeleteGroup}
-                                        className='bg-red-400 px-2 py-2 flex items-center rounded text-white text-sm max-md:text-10px max-md:h-5'>
+                                        onClick={confirmRemoveGroup}
+                                        className='bg-gray-100 p-1 border-1px border-red-500 rounded text-red-500  text-sm max-md:text-12px'>
                                         Delete Group
                                     </button>
                                 </div>
@@ -320,7 +339,7 @@ const EditGroup = ({ onClose }) => {
                 )}
 
                 {/* Individual chat delete button */}
-                {chatDetails.type === 'Individual' && (
+                {/* {chatDetails.type === 'Individual' && (
                     <div className='mt-4'>
                         <button
                             onClick={handleDeleteChat}
@@ -328,7 +347,7 @@ const EditGroup = ({ onClose }) => {
                             Delete Chat
                         </button>
                     </div>
-                )}
+                )} */}
             </div>
         </div>
     );

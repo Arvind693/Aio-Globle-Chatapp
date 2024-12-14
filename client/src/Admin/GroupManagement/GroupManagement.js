@@ -209,12 +209,12 @@ const GroupManagement = () => {
                                     />
                                 </List.Item>
                             )}
-                        />
+                        />  
                     </div>
-                }
+                }  
             </Modal>
             {editGroupModelOpen && (
-                <EditGroup user={selectedChat.users.find((u) => u._id !== user._id)} onClose={() => setEditGroupModelOpen(false)} />
+                <EditGroup groups={groups} setGroups={setGroups} onClose={() => setEditGroupModelOpen(false)}  />
             )}
         </div>
     );

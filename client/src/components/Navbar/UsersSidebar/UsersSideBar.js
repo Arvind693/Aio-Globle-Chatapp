@@ -183,7 +183,7 @@ const Sidebar = () => {
                   <div
                     className={`h-10 w-10 max-md:w-6 max-md:h-6 max-md:border-2 rounded-full border-2 
                       ${isSelectedChat(chat) ? 'border-blue-600' : 'border-blue-400'}
-                      ${isUserOnline(
+                      ${!chat?.isGroupChat && isUserOnline(
                       chat?.users?.find((u) => u._id !== loggedUser?._id)?._id
                     )
                         ? 'border-green-500 animate-borderPulse'

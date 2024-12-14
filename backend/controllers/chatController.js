@@ -1,5 +1,7 @@
 const Chat = require('../models/chatModel');
 const User = require('../models/userModel')
+const Message = require('../models/messageModel');
+const cloudinary = require('../config/cloudinary');
 
 
 // Fetch all chats for a specific user
@@ -328,7 +330,7 @@ const removeFromGroup = async (req, res) => {
 };
 
 // Controller to delete a group 
-const deleteGroup = async (req, res) => {
+const deleteGroup = async (req, res) => { 
   const { chatId } = req.body;
 
   if (!chatId) {
@@ -338,16 +340,30 @@ const deleteGroup = async (req, res) => {
   try {
     const chat = await Chat.findById(chatId);
 
-    // Verify if the user is the group admin
-    if (!chat || chat.groupAdmin.toString() !== req.user._id.toString()) {
-      return res.status(403).json({ message: "Only admins can delete the group." });
+    if (!chat) {
+      return res.status(404).json({ message: "Group not found." });
     }
+
+    // Find all messages associated with this group chat
+    const messages = await Message.find({ chat: chatId });
+
+    // Delete all associated files from Cloudinary
+    for (const message of messages) {
+      if (message.file) {
+        const publicId = message.file.split('/').pop().split('.')[0];
+        await cloudinary.uploader.destroy(`aio-globel_messages_files/${publicId}`);
+      }
+    }
+
+    // Delete all messages associated with the group
+    await Message.deleteMany({ chat: chatId });
 
     // Delete the group
     await Chat.findByIdAndDelete(chatId);
 
-    res.status(200).json({ message: "Group deleted successfully." });
+    res.status(200).json({ message: "Group and its messages deleted successfully." });
   } catch (error) {
+    console.error("Error deleting group:", error);
     res.status(500).json({ message: "Error deleting group", error: error.message });
   }
 };
@@ -358,7 +374,7 @@ const deleteChat = async (req, res) => {
     const chatId = req.params.id; // Get the chat ID from the request parameters
 
     // Check if chat exists
-    const chat = await Chat.findById(chatId);
+    const chat = await Chat.findById(chatId);  
     if (!chat) {
       return res.status(404).json({ message: 'Chat not found' });
     }

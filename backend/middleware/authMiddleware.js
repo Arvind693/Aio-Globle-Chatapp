@@ -1,6 +1,5 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/userModel');
-const Admin = require('../models/adminModel');
 
 const protect = async (req, res, next) => {
   let token;
@@ -18,10 +17,6 @@ const protect = async (req, res, next) => {
       let user = await User.findById(decoded.id).select('-password');
       let admin = null;
 
-      // If not found in User, check the Admin collection
-      if (!user) {
-        admin = await Admin.findById(decoded.id).select('-password');
-      }
 
       // If neither user nor admin is found, return an error
       if (!user && !admin) {

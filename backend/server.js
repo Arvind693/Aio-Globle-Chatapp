@@ -146,6 +146,7 @@ io.on('connection', (socket) => {
   });
 
   // -----------------START SCREEN SHARING LOGIC ----------------------------
+  
   socket.on('request-user-screen', ({ userId }) => {
     console.log(`Admin requesting screen from user: ${userId}`);
     io.to(userId).emit('admin-request-screen');
@@ -216,7 +217,7 @@ const PORT = process.env.PORT || 5000;
 const SERVER_HOST = process.env.SERVER_HOST;
 
 server.listen(PORT, '0.0.0.0', () => {
-  console.log(`Server is running on http://${SERVER_HOST}:${PORT}`);
-  console.log(`Server is running on http://localhost:${PORT}`);
+  console.log(`- Local: http://localhost:${PORT}`); 
+  console.log(`- LAN/WLAN: http://${SERVER_HOST}:${PORT}`);    
 });
  

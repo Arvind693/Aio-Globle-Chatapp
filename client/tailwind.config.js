@@ -22,6 +22,10 @@ module.exports = {
         '8px': '8px',
         '12px': '12px'
       },
+      borderWidth: {
+        '1px': '1px',
+        '2px': '2px',
+      },
       keyframes: {
         flash: {
           '0%, 80%, 100%': { opacity: 0 },

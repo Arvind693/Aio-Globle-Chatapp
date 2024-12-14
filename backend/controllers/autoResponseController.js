@@ -1,4 +1,4 @@
-const { model } = require('mongoose');
+
 const AutoResponse = require('../models/autoResponsesModel');
 
 // Fetch all active auto-responses

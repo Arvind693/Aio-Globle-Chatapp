@@ -5,9 +5,9 @@ import { ChatState } from '../../Context/ChatProvider';
 import { IoIosSend } from "react-icons/io";
 import html2canvas from 'html2canvas';
 import { MdAttachFile } from "react-icons/md";
-import UserDetails from '../UserDetails/UserDetails';
 import ChatHeader from './ChatHeader';
 import MessageList from './MessageList';
+import EditGroup from '../../Admin/GroupManagement/EditGroup';
 
 
 const serverHost = process.env.REACT_APP_SERVER_HOST;
@@ -31,7 +31,6 @@ const ChatBox = () => {
   const [userDetailsModal, setUserDetailsModal] = useState(false);
   const [hoveredMessage, setHoveredMessage] = useState(null);
   const [selectedFile, setSelectedFile] = useState(null);
-  const [isScreenShareOpen, setIsScreenShareOpen] = useState(false)
 
   const typingTimeoutRef = useRef(null);
   const messagesEndRef = useRef(null);
@@ -321,7 +320,7 @@ const ChatBox = () => {
   };
 
   const truncateFileName = (fileName) => {
-    const words = fileName.split(/[\s-_]+/); // Split by spaces, dashes, or underscores
+    const words = fileName.split(/[\s-_]+/);
     if (words.length > 3) {
       return `${words.slice(0, 3).join(' ')}...`;
     }
@@ -397,7 +396,7 @@ const ChatBox = () => {
           )}
         </form>
         {userDetailsModal && (
-          <UserDetails onClose={() => setUserDetailsModal(!userDetailsModal)} />
+          <EditGroup onClose={() => setUserDetailsModal(!userDetailsModal)} />
         )}
       </div>
     </div>

@@ -16,7 +16,8 @@ const { registerAdmin,
     getUserById,
     searchUsers,
     removeAllowedContact,
-    addAllowedContact} = require('../controllers/adminController');
+    addAllowedContact,
+    deleteUser} = require('../controllers/adminController');
 const router = express.Router();
 
 // Cloudinary Storage configuration for resume, skill icons, and project thumbnails
@@ -50,6 +51,7 @@ router.post('/registeruser',protect,registerUser);
 router.get('/getuser/:id',protect,getUserById);
 router.delete('/:userId/contacts/:contactId', removeAllowedContact);
 router.put('/:userId/contacts', addAllowedContact);
+router.delete('/users/:id', deleteUser);
 // router.post('/chat', createChat);
 // router.put('/update-user',upload.single('profileImage'),protect,updateUserProfile);
 

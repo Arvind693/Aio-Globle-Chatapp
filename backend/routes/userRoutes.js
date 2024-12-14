@@ -3,7 +3,7 @@ const multer = require('multer');
 const { CloudinaryStorage } = require('multer-storage-cloudinary')
 const cloudinary = require('../config/cloudinary');
 const protect = require('../middleware/authMiddleware');
-const { registerUser, loginUser, searchUsers, createChat, updateUserProfile, fetchUserPermissions } = require('../controllers/userController');
+const {loginUser, searchUsers, createChat, updateUserProfile, fetchUserPermissions } = require('../controllers/userController');
 const router = express.Router();
 
 // Cloudinary Storage configuration for resume, skill icons, and project thumbnails
@@ -23,7 +23,6 @@ const cloudinaryStorage = new CloudinaryStorage({
 // Configure multer with Cloudinary storage
 const upload = multer({ storage: cloudinaryStorage });
 
-router.post('/register', upload.single('profileImage'),registerUser);
 router.post('/login',loginUser);
 router.get('/search',protect, searchUsers);
 router.post('/chat', createChat);

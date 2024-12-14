@@ -52,6 +52,7 @@ const MessageList = ({ messages, isTyping, hoveredMessage, setHoveredMessage, ha
                     {messages[chatId].map((msg, index) => {
                         const isNewDay =
                             index === 0 || formatDate(msg.createdAt) !== formatDate(messages[chatId][index - 1]?.createdAt);
+                        const isGroupChat = selectedChat?.isGroupChat;
                         return (
                             <div key={msg._id || msg.tempId}>
                                 {isNewDay && (
@@ -75,6 +76,12 @@ const MessageList = ({ messages, isTyping, hoveredMessage, setHoveredMessage, ha
                                                 : 'bg-transparent border-2 border-gray-400'
                                             }`}
                                     >
+                                        {/* Show sender's name in group chat for messages not sent by the current user */}
+                                        {isGroupChat && msg.sender._id !== user._id && (
+                                            <p className="text-8px text-blue-700 font-semibold mb-1">
+                                                {msg.sender.name} 
+                                            </p>
+                                        )}
                                         {msg.content && (
                                             <p className="break-words text-sm max-md:text-10px">{msg.content}</p>
                                         )}

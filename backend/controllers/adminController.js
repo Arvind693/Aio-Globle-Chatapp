@@ -1,7 +1,7 @@
-const bcrypt = require('bcryptjs');
-const Admin = require('../models/adminModel');
+
 const User = require('../models/userModel');
 const Chat = require('../models/chatModel');
+const Message = require('../models/messageModel');
 const AutoResponse = require('../models/autoResponsesModel')
 const generateToken = require('../config/jwtToken');
 const cloudinary = require('../config/cloudinary');
@@ -34,7 +34,7 @@ const registerAdmin = async (req, res) => {
             userName,
             password,
             role: "Admin",
-            userPermissions: [], // To be populated as users register
+            userPermissions: [],
             autoResponseData: [], // Admin can manage this after creation
             groupSettings: {
                 canAddUsers: true,
@@ -71,7 +71,7 @@ const registerAdmin = async (req, res) => {
 
 // Admin login controller
 const loginAdmin = async (req, res) => {
-    const { userName, password,role } = req.body;
+    const { userName, password, role } = req.body;
 
     // Validate if userName and password are provided
     if (!userName || !password) {
@@ -80,7 +80,7 @@ const loginAdmin = async (req, res) => {
             message: "Please provide both userName and password!"
         });
     }
-    
+
     try {
         const user = await User.findOne({ userName });
 
@@ -88,7 +88,7 @@ const loginAdmin = async (req, res) => {
             return res.send({ message: "This user is not exist " })
         }
 
-        if(role!==user.role){
+        if (role !== user.role) {
             return res.send({ message: "You are not an Admin " })
         }
 
@@ -145,9 +145,8 @@ const registerUser = async (req, res) => {
             name,
             userName,
             password,
-            permissions: userPermissions, 
+            permissions: userPermissions,
         });
-
         // Respond with user details and a JWT token
         if (newUser) {
             res.status(201).json({
@@ -168,16 +167,79 @@ const registerUser = async (req, res) => {
     }
 };
 
+const deleteUser = async (req, res) => {
+    const userId = req.params.id; // ID of the user to be deleted
 
+    try {
+        // Find the user by ID
+        const user = await User.findById(userId);
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        // Delete user's profile image from Cloudinary if it exists
+        if (user.profileImage) {
+            const publicId = user.profileImage.split('/').pop().split('.')[0];
+            await cloudinary.uploader.destroy(`aio-globel_profile_image/${publicId}`);
+        }
+
+        // Find all messages sent by this user
+        const messages = await Message.find({ sender: userId });
+
+        for (const message of messages) {
+            // Delete associated file in Cloudinary, if any
+            if (message.file) {
+                const publicId = message.file.split('/').pop().split('.')[0];
+                await cloudinary.uploader.destroy(`aio-globel_messages_files/${publicId}`);
+            }
+
+            // Remove message from associated chats
+            await Chat.updateOne(
+                { _id: message.chat },
+                { $pull: { messages: message._id } }
+            );
+
+            // Emit deletion event for chats if needed
+            if (req.io && message.chat) {
+                req.io.emit('message deleted for everyone', {
+                    messageId: message._id,
+                    chatId: message.chat,
+                });
+            }
+        }
+
+        // Delete all messages sent by the user
+        await Message.deleteMany({ sender: userId });
+
+        const chats = await Chat.find({ users: userId });
+
+        for (const chat of chats) {
+            if (chat.isGroupChat) {
+                await Chat.updateOne(
+                    { _id: chat._id },
+                    { $pull: { users: userId } }
+                );
+            } else {
+                await Chat.findByIdAndDelete(chat._id);
+            }
+        }
+        await User.findByIdAndDelete(userId);
+
+        return res.status(200).json({ message: 'User, profile image, and associated messages deleted successfully' });
+    } catch (error) {
+        return res.status(500).json({ message: 'Server error' });
+    }
+};
 
 
 const getAllUsers = async (req, res) => {
     try {
         const users = await User.find({}, {
-            password: 1, 
-            name: 1, 
+            password: 1,
+            name: 1,
             userName: 1,
-            isOnline:1,
+            isOnline: 1,
             role: 1,
             profileImage: 1,
             permissions: 1,
@@ -203,10 +265,10 @@ const getAllUsers = async (req, res) => {
 const getAllGroups = async (req, res) => {
     try {
         // Fetch all group chats (isGroupChat: true) and populate related fields
-        const groups = await Chat.find({ isGroupChat: true,users: { $elemMatch: { $eq: req.user._id } } })
-            .populate("users", "-password") 
-            .populate("latestMessage") 
-            .populate("groupAdmin", "-password") 
+        const groups = await Chat.find({ isGroupChat: true, users: { $elemMatch: { $eq: req.user._id } } })
+            .populate("users", "-password")
+            .populate("latestMessage")
+            .populate("groupAdmin", "-password")
             .sort({ updatedAt: -1 })
         res.status(200).json({
             success: true,
@@ -228,8 +290,6 @@ const getAllGroups = async (req, res) => {
 const updatePermissions = async (req, res) => {
     const { userId } = req.params;
     const updatedPermissions = req.body;
-    console.log(userId);
-
     try {
         // Update the user's permissions in the database
         const user = await User.findByIdAndUpdate(
@@ -487,8 +547,6 @@ const removeAllowedContact = async (req, res) => {
         userId = new mongoose.Types.ObjectId(userId);
         contactId = new mongoose.Types.ObjectId(contactId);
 
-        console.log(`Removing contact: ${contactId} from user: ${userId}`);
-
         // Find the user and update their allowedContacts array
         const updatedUser = await User.findByIdAndUpdate(
             userId,
@@ -499,10 +557,6 @@ const removeAllowedContact = async (req, res) => {
         if (!updatedUser) {
             return res.status(404).json({ message: 'User not found' });
         }
-
-        console.log('Updated allowedContacts:', updatedUser.allowedContacts);
-
-        // Find and delete the chat between the user and the contact if it exists
         const chat = await Chat.findOneAndDelete({
             isGroupChat: false,
             users: { $all: [userId, contactId] }, // Ensure both users are in the chat
@@ -596,4 +650,5 @@ module.exports = {
     getUserById,
     removeAllowedContact,
     addAllowedContact,
+    deleteUser,
 };

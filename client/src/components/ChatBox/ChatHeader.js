@@ -9,7 +9,7 @@ const ChatHeader = ({ socket, handleScreenshot, setUserDetailsModal }) => {
   const [otherUserId, setOtherUserId] = useState(null);
   const [remoteStream, setRemoteStream] = useState(null);
   const [isAudioMuted, setIsAudioMuted] = useState(false);
-  const [isVideoCallActive, setIsVideoCallActive] = useState(false); 
+  const [isVideoCallActive, setIsVideoCallActive] = useState(false);
   const [incomingCall, setIncomingCall] = useState(false);
   const [callRejectedMessage, setCallRejectedMessage] = useState(null);
   const [acceptCallHandler, setAcceptCallHandler] = useState(() => null);
@@ -25,7 +25,7 @@ const ChatHeader = ({ socket, handleScreenshot, setUserDetailsModal }) => {
 
   const peerConfig = {
     iceServers: [
-      { urls: "stun:stun.l.google.com:19302" }, 
+      { urls: "stun:stun.l.google.com:19302" },
     ],
   };
 
@@ -370,7 +370,11 @@ const ChatHeader = ({ socket, handleScreenshot, setUserDetailsModal }) => {
       <div className="flex justify-center items-center gap-1">
         <div
           className="h-10 w-10 max-md:h-6 max-md:w-6 rounded-full overflow-hidden cursor-pointer"
-          onClick={() => setUserDetailsModal(true)}
+          onClick={() => {
+            if (user?.role === 'Admin') {
+              setUserDetailsModal(true);
+            }
+          }}
         >
           <img
             src={getProfileImage()}
@@ -378,13 +382,15 @@ const ChatHeader = ({ socket, handleScreenshot, setUserDetailsModal }) => {
             className="h-full w-full object-cover"
           />
         </div>
+
+
         <h3 className="text-lg max-md:text-10px text-black font-semibold truncate">
           {getChatName()}
         </h3>
       </div>
 
       {/* Admin-Specific Controls */}
-      {user.role === "Admin" ? (
+      {!selectedChat.isGroupChat && user.role === "Admin" ? (
         <button
           onClick={() => {
             handleRequestUserScreen();
@@ -392,7 +398,7 @@ const ChatHeader = ({ socket, handleScreenshot, setUserDetailsModal }) => {
           }}
           className="flex max-md:text-10px bg-gradient-to-r from-blue-600 to-red-400 text-white px-3 py-1 rounded-md hover:bg-blue-700"
         >
-          Access User Screen
+          Access {getChatName()}'s Screen
         </button>
       ) : null}
 
@@ -459,12 +465,15 @@ const ChatHeader = ({ socket, handleScreenshot, setUserDetailsModal }) => {
         </div>
       )}
       {/* Start Video Calling Button  */}
-      <button
-        onClick={startVideoCall}
-        className="bg-green-500 text-white p-2 rounded-full"
-      >
-        <MdVideoCall className="text-xl max-md:text-sm" />
-      </button>
+      {!selectedChat.isGroupChat && (
+        <button
+          onClick={startVideoCall}
+          className="bg-green-500 text-white p-2 rounded-full"
+        >
+          <MdVideoCall className="text-xl max-md:text-sm" />
+        </button>
+      )}
+
 
       {/* Incoming Call Notification */}
       {incomingCall && (
