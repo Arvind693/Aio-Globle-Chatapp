@@ -7,11 +7,12 @@ function getLocalIp() {
   for (const name of Object.keys(interfaces)) {
     for (const iface of interfaces[name]) {
       if (iface.family === 'IPv4' && !iface.internal) {
-        return iface.address;
+        // return iface.address;
+        return 'localhost'
       }
     }
   }
-  return '127.0.0.1'; // Fallback to localhost
+  return 'localhost';
 }
 
 const ip = getLocalIp();

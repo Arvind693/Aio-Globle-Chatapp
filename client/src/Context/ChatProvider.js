@@ -13,7 +13,7 @@ const ENDPOINT =
     : `http://${serverHost}:5000`;
 
 const SOCKET_ENDPOINT = process.env.NODE_ENV === "production"
-    ? "wss://aio-globle-chatapp.onrender.com" // For secure WebSocket
+    ? "wss://aio-globle-chatapp.onrender.com" 
     : `ws://${serverHost}:5000`;
 let socket;
 const ChatProvider = ({ children }) => {

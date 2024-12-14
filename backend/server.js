@@ -161,6 +161,15 @@ io.on('connection', (socket) => {
     console.log(`User sending answer to admin: ${adminId}`);
     io.to(adminId).emit('receive-answer', { answer });
   });
+
+  socket.on('screen-share-stopped', ({ userId }) => {
+    console.log(`Screen share stopped by user: ${userId}`);
+    io.to(userId).emit('screen-share-stopped');
+  });
+
+  socket.on('force-stop-screen-share',({userId}) =>{
+    io.to(userId).emit('force-stop-screen-share')
+  })
   // ---------------------------END SCREEN SHARE LOGIC-----------------------------
   socket.on("start-video-call", ({ offer, userId, myId, myName }) => {
     io.to(userId).emit("incoming-video-call", { offer, callerId: myId, callerName:myName });
@@ -216,7 +225,7 @@ io.on('connection', (socket) => {
 const PORT = process.env.PORT || 5000; 
 const SERVER_HOST = process.env.SERVER_HOST;
 
-server.listen(PORT, '0.0.0.0', () => {
+server.listen(PORT, () => {
   console.log(`- Local: http://localhost:${PORT}`); 
   console.log(`- LAN/WLAN: http://${SERVER_HOST}:${PORT}`);    
 });
