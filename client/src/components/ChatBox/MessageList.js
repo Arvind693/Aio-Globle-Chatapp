@@ -79,11 +79,20 @@ const MessageList = ({ messages, isTyping, hoveredMessage, setHoveredMessage, ha
                                         {/* Show sender's name in group chat for messages not sent by the current user */}
                                         {isGroupChat && msg.sender._id !== user._id && (
                                             <p className="text-8px text-blue-700 font-semibold mb-1">
-                                                {msg.sender.name} 
+                                                {msg.sender.name}
                                             </p>
                                         )}
                                         {msg.content && (
-                                            <p className="break-words text-sm max-md:text-10px">{msg.content}</p>
+                                            <p className="break-words text-sm max-md:text-xs">
+                                                {msg.content.split(/([\uD800-\uDBFF][\uDC00-\uDFFF]|\p{Emoji_Presentation}|\p{Emoji_Modifier_Base})/gu).map((char, index) => (
+                                                    <span
+                                                        key={index}
+                                                        className={/[\uD800-\uDBFF][\uDC00-\uDFFF]|\p{Emoji_Presentation}|\p{Emoji_Modifier_Base}/gu.test(char) ? "text-xl max-md:text-sm" : ""}
+                                                    >
+                                                        {char}
+                                                    </span>
+                                                ))}
+                                            </p>
                                         )}
                                         {msg.file && (
                                             <div className="mt-2">

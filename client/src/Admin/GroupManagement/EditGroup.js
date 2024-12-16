@@ -284,7 +284,7 @@ const EditGroup = ({groups,setGroups, onClose }) => {
                         {/* Add new user to the group*/}
                         <div>
                             <button
-                                className='bg-gray-100 p-1 border-1px border-green-500 rounded text-green-500 text-sm max-md:text-12px '
+                                className='bg-gray-100 p-1 border-1px border-green-500 rounded text-green-500 text-sm max-md:text-12px hover:bg-green-100'
                                 onClick={() => setToggleAddUser(!toggleAddUser)}>
                                 {toggleAddUser ? 'Close' : 'Add User'}
                             </button>
@@ -329,7 +329,7 @@ const EditGroup = ({groups,setGroups, onClose }) => {
                                 <div className='mt-4'>
                                     <button
                                         onClick={confirmRemoveGroup}
-                                        className='bg-gray-100 p-1 border-1px border-red-500 rounded text-red-500  text-sm max-md:text-12px'>
+                                        className='bg-gray-100 p-1 border-1px border-red-500 rounded text-red-500  text-sm max-md:text-12px hover:bg-red-100'>
                                         Delete Group
                                     </button>
                                 </div>

@@ -166,15 +166,15 @@ const ScreenShare = ({
         <>
             {/* Admin Screen Share UI */}
             {isScreenShareOpen && user.role === "Admin" && (
-                <div className="fixed inset-0 flex justify-center items-center bg-gray-900 bg-opacity-75 z-50">
-                    <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-3xl">
+                <div className="absolute top-0 -left-8 right-0 bottom-0 inset-0 flex justify-center items-center bg-gray-900 bg-opacity-75 z-50">
+                    <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-4xl">
                         <div>
                             {remoteStream ? (
                                 <video
                                     ref={videoRef}
                                     autoPlay
                                     playsInline
-                                    className="w-full border border-gray-500 rounded-lg"
+                                    className="w-full h-full object-cover border border-gray-500 rounded-lg"
                                 />
                             ) : (
                                 <p className="text-gray-600">Waiting for user's screen...</p>

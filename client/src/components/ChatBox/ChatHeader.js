@@ -26,9 +26,9 @@ const ChatHeader = ({ socket, handleScreenshot, setUserDetailsModal }) => {
   const getProfileImage = () =>
     selectedChat.isGroupChat
       ? selectedChat.groupImage ||
-        "https://icon-library.com/images/anonymous-avatar-icon/anonymous-avatar-icon-25.jpg"
+      "https://icon-library.com/images/anonymous-avatar-icon/anonymous-avatar-icon-25.jpg"
       : selectedChat.users.find((u) => u._id !== user._id)?.profileImage ||
-        "https://icon-library.com/images/anonymous-avatar-icon/anonymous-avatar-icon-25.jpg";
+      "https://icon-library.com/images/anonymous-avatar-icon/anonymous-avatar-icon-25.jpg";
 
   return (
     <div className="bg-transparent text-white p-4 max-md:p-2 flex items-center justify-between space-x-3 md:space-x-4">
@@ -55,20 +55,20 @@ const ChatHeader = ({ socket, handleScreenshot, setUserDetailsModal }) => {
       {!selectedChat.isGroupChat && user?.role === "Admin" && (
         <button
           onClick={() => setIsScreenShareRequested(true)}
-          className="px-2 py-1 border border-green-500 rounded-md text-green-600 text-sm bg-transparent hover:bg-green-100 shadow-lg"
+          className="px-2 py-1 max-md:px-1 max-md:py-1 border border-green-500 rounded-md text-green-600 text-sm max-md:text-10px bg-transparent hover:bg-green-100 shadow-lg"
         >
-          Access {getChatName()}'s Screen
+          Access Screen
         </button>
       )}
 
       {/* Screenshot Button */}
-      <button
+      {/* <button
         onClick={handleScreenshot}
         className="flex items-center bg-gradient-to-r from-blue-600 to-red-400 text-white px-3 py-1 rounded-md hover:bg-blue-700"
       >
         <MdCameraAlt size={20} className="max-md:hidden" />
         <span className="max-md:text-xs">Screenshot</span>
-      </button>
+      </button> */}
 
 
       {/* Video Call Button */}
@@ -94,6 +94,8 @@ const ChatHeader = ({ socket, handleScreenshot, setUserDetailsModal }) => {
         isVideoCallStarted={isVideoCallStarted}
         otherUserId={otherUserId}
         setIsVideoCallStarted={setIsVideoCallStarted}
+        otherUserName={getChatName()}
+        profileImage={getProfileImage()}
       />
     </div>
   );

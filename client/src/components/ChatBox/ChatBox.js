@@ -2,19 +2,13 @@ import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import io from 'socket.io-client';
 import { ChatState } from '../../Context/ChatProvider';
-import { IoIosSend } from "react-icons/io";
 import html2canvas from 'html2canvas';
-import { MdAttachFile } from "react-icons/md";
 import ChatHeader from './ChatHeader';
 import MessageList from './MessageList';
 import EditGroup from '../../Admin/GroupManagement/EditGroup';
-
+import MessageInput from './MessageInput';
 
 const serverHost = process.env.REACT_APP_SERVER_HOST;
-const ENDPOINT = process.env.NODE_ENV === "production"
-  ? "https://aio-globle-chatapp.onrender.com"
-  : `http://${serverHost}:5000`;
-
 const SOCKET_ENDPOINT = process.env.NODE_ENV === "production"
   ? "wss://aio-globle-chatapp.onrender.com" // For secure WebSocket
   : `ws://${serverHost}:5000`;
@@ -31,6 +25,7 @@ const ChatBox = () => {
   const [userDetailsModal, setUserDetailsModal] = useState(false);
   const [hoveredMessage, setHoveredMessage] = useState(null);
   const [selectedFile, setSelectedFile] = useState(null);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
 
   const typingTimeoutRef = useRef(null);
   const messagesEndRef = useRef(null);
@@ -339,6 +334,10 @@ const ChatBox = () => {
     };
   }, [selectedChat]);
 
+  const handleEmojiClick = (emojiObject) => {
+    setNewMessage((prevMessage) => prevMessage + emojiObject.emoji);
+  };
+
   return (
     <div className="h-full w-full bg-gradient-to-r from-gray-100 to-gray-300 flex flex-col">
       {selectedChat && (
@@ -356,45 +355,17 @@ const ChatBox = () => {
             handleDeleteMessage={handleDeleteMessage}
             loading={loading}
           />
+          <MessageInput
+            newMessage={newMessage}
+            setNewMessage={setNewMessage}
+            handleKeyDown={handleKeyDown}
+            sendMessage={sendMessage}
+            setSelectedFile={setSelectedFile}
+          />
         </>
       )}
 
       <div>
-        <form
-          onSubmit={sendMessage}
-          className="p-4 max-md:p-4 bg-transparent flex justify-center max-md:mb-4"
-        >
-          <div className="h-14 max-md:h-10 flex items-center  max-w-sm md:w-1/2 shadow-lg max-md:mb-6 bg-gray-700 rounded-l-lg">
-            <input
-              type="text"
-              value={newMessage}
-              onChange={(e) => setNewMessage(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder="Type a message..."
-              className="text-white flex-1 p-2 md:p-3 bg-transparent focus:outline-none shadow-inner text-base max-md:text-12px"
-            />
-            <label htmlFor="file-upload" className="cursor-pointer bg-transparent text-gray-400 p-2">
-              <MdAttachFile size={window.innerWidth < 640 ? 20 : 25} />
-            </label>
-            <input
-              id="file-upload"
-              type="file"
-              className="hidden"
-              onChange={(e) => setSelectedFile(e.target.files[0])}
-            />
-          </div>
-          <button
-            type="submit"
-            className="h-14 max-md:h-10 bg-green-600 max-md:text-l text-white px-3 max-md:p-2 rounded-r-lg hover:bg-green-800 shadow-lg"
-          >
-            <IoIosSend size={window.innerWidth < 640 ? 20 : 25} />
-          </button>
-          {selectedFile && (
-            <div className="fixed bottom-20 text-sm text-gray-500 mt-2">
-              <span className="font-semibold text-gray-700">Selected File:</span> {truncateFileName(selectedFile.name)}
-            </div>
-          )}
-        </form>
         {userDetailsModal && (
           <EditGroup onClose={() => setUserDetailsModal(!userDetailsModal)} />
         )}

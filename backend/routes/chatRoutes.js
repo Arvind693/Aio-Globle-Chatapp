@@ -9,13 +9,15 @@ const { fetchAllChats,
     removeFromGroup,
     deleteGroup,
     deleteChat,
-    initializeAdminChats
+    initializeAdminChats,
+    fetchAllChatsForChatHistory
 } = require('../controllers/chatController');
 const User = require('../models/userModel');
 const protect = require('../middleware/authMiddleware');
 
 // Fetch all chats for a specific user
 router.get('/user-chats/:userId', fetchAllChats);
+router.get('/fetch-chat-history/:userId',fetchAllChatsForChatHistory);
 router.post('/', protect, accessChat);
 router.get('/', protect, fetchChats);
 router.post('/initialize-admin-chats', protect, initializeAdminChats);

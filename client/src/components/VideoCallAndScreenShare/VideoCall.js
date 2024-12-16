@@ -1,13 +1,15 @@
 import React, { useRef, useState, useEffect } from "react";
 import Peer from "simple-peer";
-import { MdMic, MdMicOff, MdCallEnd, MdCall } from "react-icons/md";
+import { MdMic, MdMicOff, MdCallEnd, MdCall, MdVideocam, MdVideocamOff } from "react-icons/md";
 import { ChatState } from "../../Context/ChatProvider";
 import peerConfig from "./peerConfig";
+import SendingMessageAnimation from '../Animations/SendingMessageAnimation';
 
-const VideoCall = ({ socket, isVideoCallStarted, otherUserId, setIsVideoCallStarted }) => {
+const VideoCall = ({ socket, isVideoCallStarted, otherUserId, setIsVideoCallStarted, otherUserName, profileImage }) => {
     const { selectedChat, user } = ChatState();
     const [remoteStream, setRemoteStream] = useState(null);
     const [isAudioMuted, setIsAudioMuted] = useState(false);
+    const [isVideoMuted, setIsVideoMuted] = useState(false);
     const [isVideoCallActive, setIsVideoCallActive] = useState(false);
     const [incomingCall, setIncomingCall] = useState(false);
     const [callRejectedMessage, setCallRejectedMessage] = useState(null);
@@ -15,13 +17,35 @@ const VideoCall = ({ socket, isVideoCallStarted, otherUserId, setIsVideoCallStar
     const [callerId, setCallerId] = useState(null);
     const [callerName, setCallerName] = useState(null);
     const [ringingTimeout, setRingingTimeout] = useState(null);
+    const [callDuration, setCallDuration] = useState(0);
     const localStreamRef = useRef(null);
     const localVideoRef = useRef(null);
     const videoRef = useRef(null);
     const peer = useRef(null);
-
+    const [preScreen, setPreScreen] = useState(false);
+    const timerIntervalRef = useRef(null);
     const RINGING_DURATION = 30000;
 
+    // Timer Utility: Format seconds into mm:ss
+    const formatTime = (seconds) => {
+        const minutes = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        return `${String(minutes).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
+    };
+
+    const startCallTimer = () => {
+        setCallDuration(0);
+        timerIntervalRef.current = setInterval(() => {
+            setCallDuration((prev) => prev + 1);
+        }, 1000);
+    };
+
+    const stopCallTimer = () => {
+        if (timerIntervalRef.current) {
+            clearInterval(timerIntervalRef.current);
+            timerIntervalRef.current = null;
+        }
+    };
     // Set up WebRTC Peer and Socket Listeners
     useEffect(() => {
         if (!socket) return;
@@ -52,6 +76,7 @@ const VideoCall = ({ socket, isVideoCallStarted, otherUserId, setIsVideoCallStar
         };
 
         const handleIncomingCall = ({ offer, callerId, callerName }) => {
+            console.log("handleIncomming call or CallerId:",callerId)
             setCallerName(callerName)
             setIncomingCall(true);
             setCallerId(callerId);
@@ -64,12 +89,12 @@ const VideoCall = ({ socket, isVideoCallStarted, otherUserId, setIsVideoCallStar
 
             setAcceptCallHandler(() => async () => {
                 clearTimeout(timeout);
-            
+
                 // Initialize local stream for the responder
                 if (!localStreamRef.current) {
                     await initializeLocalStream();
                 }
-            
+
                 // Create a peer instance for the responder
                 const remotePeer = new Peer({
                     initiator: false, // Responder
@@ -77,14 +102,14 @@ const VideoCall = ({ socket, isVideoCallStarted, otherUserId, setIsVideoCallStar
                     stream: localStreamRef.current, // Attach local stream
                     config: peerConfig,
                 });
-            
+
                 // Respond with an answer
                 remotePeer.signal(offer);
-            
+
                 remotePeer.on("signal", (signal) => {
                     socket.emit("send-video-answer", { answer: signal, callerId });
                 });
-            
+
                 remotePeer.on("stream", (stream) => {
                     console.log("Remote stream received on responder side.");
                     setRemoteStream(stream);
@@ -92,10 +117,10 @@ const VideoCall = ({ socket, isVideoCallStarted, otherUserId, setIsVideoCallStar
                         videoRef.current.srcObject = stream;
                     }
                 });
-            
+
                 // Handle errors
                 remotePeer.on("error", (err) => console.error("Peer error:", err));
-            
+
                 peer.current = remotePeer;
                 setIsVideoCallActive(true);
                 setIncomingCall(false);
@@ -115,6 +140,7 @@ const VideoCall = ({ socket, isVideoCallStarted, otherUserId, setIsVideoCallStar
         };
 
         const handleCallRejected = ({ callerId, reason }) => {
+            setCallerId(null);
             stopVideoCall();
             if (callerId === user._id) {
                 setCallRejectedMessage(reason || "Your call was rejected.");
@@ -123,9 +149,19 @@ const VideoCall = ({ socket, isVideoCallStarted, otherUserId, setIsVideoCallStar
         };
 
         const handleCallEnded = () => {
+            setCallerId(null);
+            setIsVideoMuted(false);
+            setIsAudioMuted(false);
+            setIncomingCall(false);
+            stopCallTimer();
             stopVideoCall();
             setCallRejectedMessage("Call Ended")
             setTimeout(() => setCallRejectedMessage(null), 5000);
+        }
+
+        const handleCallAcceptedByOtherUser = () => {
+            setPreScreen(false);
+            startCallTimer();
         }
 
         // Add socket listeners
@@ -136,6 +172,7 @@ const VideoCall = ({ socket, isVideoCallStarted, otherUserId, setIsVideoCallStar
         socket.on("receive-ice-candidate", handleIceCandidate);
         socket.on("call-rejected", handleCallRejected);
         socket.on("call-ended", handleCallEnded);
+        socket.on('call-accepted-by-other-user', handleCallAcceptedByOtherUser);
 
         return () => {
             socket.off("admin-send-offer", handleAdminSendOffer);
@@ -145,10 +182,11 @@ const VideoCall = ({ socket, isVideoCallStarted, otherUserId, setIsVideoCallStar
             socket.off("receive-ice-candidate", handleIceCandidate);
             socket.off("call-rejected", handleCallRejected);
             socket.off("call-ended", handleCallEnded);
+            socket.on('call-accepted-by-other-user', handleCallAcceptedByOtherUser);
 
             if (peer.current) peer.current.destroy();
         };
-    }, [socket]);
+    }, [socket, selectedChat]);
 
     useEffect(() => {
         if (remoteStream && videoRef.current) {
@@ -181,9 +219,11 @@ const VideoCall = ({ socket, isVideoCallStarted, otherUserId, setIsVideoCallStar
         }
     };
 
-    
+
 
     const startVideoCall = async () => {
+        setCallDuration(0);
+        setPreScreen(true);
         if (!localStreamRef.current) {
             await initializeLocalStream();
         }
@@ -201,7 +241,7 @@ const VideoCall = ({ socket, isVideoCallStarted, otherUserId, setIsVideoCallStar
 
         const timer = setTimeout(() => {
             stopVideoCall();
-            socket.emit("call-timeout", { userId: otherUserId });
+            socket.emit("call-timeout", { userId: callerId });
         }, RINGING_DURATION);
 
         setRingingTimeout(timer);
@@ -234,6 +274,8 @@ const VideoCall = ({ socket, isVideoCallStarted, otherUserId, setIsVideoCallStar
 
 
     const stopVideoCall = () => {
+        setIsVideoMuted(false);
+        setIsAudioMuted(false);
         if (peer.current) {
             peer.current.stream?.getTracks().forEach((track) => track.stop());
             peer.current.destroy();
@@ -250,8 +292,17 @@ const VideoCall = ({ socket, isVideoCallStarted, otherUserId, setIsVideoCallStar
         setIsVideoCallStarted(false);
         if (ringingTimeout) clearTimeout(ringingTimeout);
         setRingingTimeout(null);
-        socket.emit("end-video-call", { userId: otherUserId });
+        socket.emit("end-video-call", { userId: callerId });
+        setCallRejectedMessage(null);
+        stopCallTimer();
+        setCallerId(null);
     };
+
+    useEffect(() => {
+        return () => {
+            stopCallTimer();
+        };
+    }, []);
 
     const acceptCall = () => {
         if (acceptCallHandler) acceptCallHandler();
@@ -260,6 +311,7 @@ const VideoCall = ({ socket, isVideoCallStarted, otherUserId, setIsVideoCallStar
             setRingingTimeout(null);
         }
         socket.emit("call-accepted", { callerId });
+        startCallTimer();
     };
 
     const rejectCall = () => {
@@ -282,6 +334,14 @@ const VideoCall = ({ socket, isVideoCallStarted, otherUserId, setIsVideoCallStar
         if (audioTrack) {
             audioTrack.enabled = !audioTrack.enabled;
             setIsAudioMuted(!audioTrack.enabled);
+        }
+    };
+
+    const toggleVideo = () => {
+        const videoTrack = localStreamRef.current?.getVideoTracks()[0];
+        if (videoTrack) {
+            videoTrack.enabled = !videoTrack.enabled;
+            setIsVideoMuted(!videoTrack.enabled);
         }
     };
 
@@ -314,15 +374,45 @@ const VideoCall = ({ socket, isVideoCallStarted, otherUserId, setIsVideoCallStar
 
             {/* Video Call Controls */}
             {isVideoCallActive && (
-                <div className="absolute top-0 left-0 right-0 bottom-0 z-50 flex items-center justify-center bg-gray-900 bg-opacity-100">
+                <div className="absolute top-0 -left-8 right-0 bottom-0 z-50 flex items-center justify-center bg-gray-900 bg-opacity-100">
+                    {/* Display Call Timer */}
+                    {callDuration && (
+                        <div className="absolute top-2 left-2 transform -translate-x-1/2 bg-gray-800 bg-opacity-20 text-white px-4 py-2 max-md:px-2 max-md:py-1 max-md:text-12px rounded-lg shadow-lg z-50">
+                            {formatTime(callDuration)}
+                        </div>
+                    )}
                     {/* Remote Video */}
                     <div className="relative w-full h-full">
-                        <video
-                            ref={videoRef}
-                            autoPlay
-                            playsInline
-                            className="w-full h-full object-cover"
-                        />
+                        {!preScreen ? (
+                            <video
+                                ref={videoRef}
+                                autoPlay
+                                playsInline
+                                className="w-full h-full object-cover"
+                            />
+                        ) : (
+                            <div className="flex items-center justify-center w-full h-full bg-gray-800 text-white text-lg">
+                                <div className="flex flex-col items-center space-y-4">
+                                    {/* Display Profile Image and Chat Name */}
+                                    <div className="flex items-center space-x-3">
+                                        <img
+                                            src={profileImage}
+                                            alt="Profile"
+                                            className="w-10 h-10 rounded-full object-cover"
+                                        />
+                                        <p className="text-lg font-semibold">{otherUserName}</p>
+                                    </div>
+
+                                    {/* Requesting Video Call Animation */}
+                                    <div className="flex items-center space-x-2">
+                                        <p>Requesting <span className="text-yellow-600">{otherUserName}</span> to join video call</p>
+                                        <div className="mt-2">
+                                        <SendingMessageAnimation/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
 
                         {/* Local Video Overlay */}
                         <div className="absolute top-4 right-4 w-32 h-24 md:w-48 md:h-32 border border-gray-700 rounded-lg overflow-hidden shadow-lg">
@@ -353,6 +443,12 @@ const VideoCall = ({ socket, isVideoCallStarted, otherUserId, setIsVideoCallStar
                                 ) : (
                                     <MdMic className="text-2xl" />
                                 )}
+                            </button>
+                            <button
+                                onClick={toggleVideo}
+                                className="flex items-center justify-center w-12 h-12 bg-gray-600 hover:bg-gray-700 text-white rounded-full shadow-lg"
+                            >
+                                {isVideoMuted ? <MdVideocamOff className="text-2xl" /> : <MdVideocam className="text-2xl" />}
                             </button>
                         </div>
                     </div>

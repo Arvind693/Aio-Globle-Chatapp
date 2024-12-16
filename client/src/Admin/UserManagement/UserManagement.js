@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import io from 'socket.io-client';
 import { CopyOutlined } from '@ant-design/icons';
-
+import {AiFillEye, AiFillEyeInvisible } from 'react-icons/ai';
 import { message, Spin, Modal } from 'antd';
 import UserList from '../UserManagement/UserList';
 import AdminNavbar from '../AdminNavbar/AdminNavbar';
@@ -21,10 +21,13 @@ const UserManagement = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [siteUrl, setSiteUrl] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
+    const [passwordMismatch, setPasswordMismatch] = useState(false);
     const [formData, setFormData] = useState({
         name: '',
         userName: '',
         password: '',
+        confirmPassword: '',
         allowedContacts: [],
         permissions: {
             canMessage: false,
@@ -55,7 +58,6 @@ const UserManagement = () => {
  
     useEffect(() => {
         fetchUsers();
-        // initializeAdminChats();  
     }, []);
 
     const fetchUsers = async () => {
@@ -117,6 +119,12 @@ const UserManagement = () => {
 
     const handleRegister = async (e) => {
         e.preventDefault();
+        if (formData.password !== formData.confirmPassword) {
+            setPasswordMismatch(true);
+            return;
+        }
+
+        setPasswordMismatch(false);
         setLoading(true);
         try {
             const config = {
@@ -125,12 +133,14 @@ const UserManagement = () => {
                     Authorization: `Bearer ${adminInfo?.token}`,
                 },
             };
-            await axios.post('/api/admin/registeruser', formData, config);
+            const { name, userName, password, permissions } = formData;
+            await axios.post('/api/admin/registeruser', { name, userName, password, permissions }, config);
             message.success('User registered successfully');
             setFormData({
                 name: '',
                 userName: '',
                 password: '',
+                confirmPassword: '',
                 permissions: {
                     canMessage: false,
                     canScreenShare: false,
@@ -209,13 +219,15 @@ const UserManagement = () => {
     const handleCancel = () => {
         setIsModalVisible(false);
     };
-
+    const togglePasswordVisibility = () => {
+        setShowPassword(!showPassword);
+    };
 
     return (
         <div className="min-h-screen p-0 bg-gray-300">
             <AdminNavbar />
             {/* Site URL Section */}
-            <div className="bg-white shadow-lg rounded-lg p-6 mb-10 mt-2 max-w-lg mx-auto max-md:w-72 border border-gray-200 text-center">
+            <div className="bg-white shadow-lg rounded-lg p-6 mb-10 max-md:mb-3 mt-2 max-w-lg mx-auto max-md:w-72 border border-gray-200 text-center">
                 <h4 className="text-lg font-semibold text-gray-700 mb-4">Share Site URL</h4>
                 <div className="flex items-center justify-between bg-gray-100 p-3 rounded-lg">
                     <span className="text-gray-700 text-sm truncate">{siteUrl}</span>
@@ -227,14 +239,6 @@ const UserManagement = () => {
                         <CopyOutlined />
                     </button>
                 </div>
-            </div>
-            <div className="text-center mb-6 ">
-                <button
-                    onClick={showModal}
-                    className="px-4 py-2 max-md:text-xs bg-gradient-to-t from-green-500 to-green-600 text-white rounded hover:bg-green-700 shadow-lg hover:shadow-xl transition-shadow duration-200"
-                >
-                    Register New User
-                </button>
             </div>
 
             {/* Modal for User Registration */}
@@ -264,16 +268,39 @@ const UserManagement = () => {
                         className="w-full px-2 py-1 border-2 text-sm mb-4 border-green-500 rounded outline-none"
                         required
                     />
+                    <div className="relative mb-4">
+                        <input
+                            type={showPassword ? 'text' : 'password'}
+                            name="password"
+                            placeholder="Password"
+                            value={formData.password}
+                            onChange={handleChange}
+                            className="w-full px-2 py-1 border-2 text-sm border-green-500 rounded outline-none"
+                            required
+                        />
+                        <button
+                            type="button"
+                            onClick={togglePasswordVisibility}
+                            className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-600"
+                        >
+                            {showPassword ?  <AiFillEyeInvisible size={window.innerWidth < 640 ? 16 : 20} />: <AiFillEye size={window.innerWidth < 640 ? 16 : 20}/>}
+                        </button>
+                    </div>
                     <input
                         type="password"
-                        name="password"
-                        placeholder="Password"
-                        value={formData.password}
+                        name="confirmPassword"
+                        placeholder="Confirm Password"
+                        value={formData.confirmPassword}
                         onChange={handleChange}
-                        className="w-full px-2 py-1 border-2 text-sm mb-4 border-green-500 rounded outline-none"
+                        className={`w-full px-2 py-1 border-2 text-sm mb-4 ${
+                            passwordMismatch ? 'border-red-500' : 'border-green-500'
+                        } rounded outline-none`}
                         required
                     />
-                    <div className="mb-4">
+                    {passwordMismatch && (
+                        <p className="text-red-500 text-sm mb-4">Passwords do not match</p>
+                    )}
+                    {/* <div className="mb-4">
                         <label className="text-gray-800 font-semibold mb-2 block">Set Permissions:</label>
                         <div className="grid grid-cols-2 gap-4">
                             {Object.keys(formData.permissions).map((permission) => (
@@ -289,7 +316,7 @@ const UserManagement = () => {
                                 </label>
                             ))}
                         </div>
-                    </div>
+                    </div> */}
                     <button
                         type="submit"
                         className="w-full py-2 bg-green-600 text-white rounded font-semibold hover:bg-green-700 transition duration-200"
@@ -301,7 +328,7 @@ const UserManagement = () => {
 
             {/* Registered Users List */}
             <div className='p-8'>
-                <UserList users={users} setUsers={setUsers} fetchUsers={fetchUsers} />
+                <UserList users={users} setUsers={setUsers} fetchUsers={fetchUsers} showModal={showModal}/>
             </div>
         </div>
     );

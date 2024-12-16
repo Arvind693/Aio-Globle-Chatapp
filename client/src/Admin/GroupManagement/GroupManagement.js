@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import AdminNavbar from '../AdminNavbar/AdminNavbar';
 import { Avatar, Button, Input, List, message, Modal, Spin } from 'antd';
-import { CloseOutlined } from '@ant-design/icons';
+import { CloseOutlined, TeamOutlined } from '@ant-design/icons';
 import EditGroup from './EditGroup';
 import { ChatState } from '../../Context/ChatProvider';
 
@@ -114,7 +114,7 @@ const GroupManagement = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gray-100">
+        <div className="min-h-screen overflow-hidden"> {/* Prevent scrolling on the main screen */}
             <AdminNavbar />
             <button
                 onClick={() => setIsCreateGroupModalOpen(true)}
@@ -122,25 +122,40 @@ const GroupManagement = () => {
             >
                 Create Group
             </button>
-
+    
             {/* Group List */}
-            <div className='w-full p-8 flex flex-col items-center'>
-                <div className='w-full flex justify-center border-b-2 border-green-500'>
-                    <h4 className="text-2xl max-md:text-lg font-semibold text-gray-700 mb-2">Groups</h4>
+            <div className="w-full px-8 flex flex-col items-center">
+                {/* Header */}
+                <div className="w-full flex justify-center border-b-4 border-blue-500 pb-2">
+                    <h4 className="text-3xl max-md:text-xl font-semibold text-gray-800">Groups</h4>
                 </div>
-
-                <div className="w-full max-w-3xl space-y-2 max-md:space-y-1 mt-2">
-                    {groups.map(group => (
+    
+                {/* Group List */}
+                <div className="w-full p-8 max-w-3xl mt-4 space-y-3 max-md:space-y-2 h-[60vh] overflow-y-auto"> 
+                    {groups.map((group) => (
                         <div
                             key={group._id}
-                            onClick={() => { setEditGroupModelOpen(true); setSelectedChat(group); }}
-                            className=" bg-gradient-to-r from-gray-800 to-blue-600  shadow-md rounded-lg p-2 cursor-pointer transition-transform duration-300 hover:shadow-xl hover:scale-105"
+                            onClick={() => {
+                                setEditGroupModelOpen(true);
+                                setSelectedChat(group);
+                            }}
+                            className="flex items-center bg-white shadow-lg rounded-lg p-4 cursor-pointer transition-transform duration-300 hover:shadow-xl hover:scale-105 border-l-4 border-blue-500"
                         >
-                            <h5 className="text-xs text-white font-semibold">{group.chatName}</h5>
+                            {/* Group Icon */}
+                            <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full flex justify-center items-center text-white text-xl font-bold mr-4">
+                                <TeamOutlined style={{ fontSize: '24px' }} />
+                            </div>
+    
+                            {/* Group Name */}
+                            <div className="flex-1">
+                                <h5 className="text-lg text-gray-800 font-semibold">{group.chatName}</h5>
+                                <p className="text-sm text-gray-500">Click to manage this group</p>
+                            </div>
                         </div>
                     ))}
                 </div>
             </div>
+    
             {/* Create Group Modal */}
             <Modal
                 title="Create Group"
@@ -154,16 +169,18 @@ const GroupManagement = () => {
                     value={newGroupName}
                     onChange={(e) => setNewGroupName(e.target.value)}
                 />
-
+    
                 <Input
                     placeholder="Search Users..."
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                     className="mb-3 mt-3"
                 />
-
+    
                 {loading ? (
-                    <div className="text-center"><Spin /></div>
+                    <div className="text-center">
+                        <Spin />
+                    </div>
                 ) : (
                     search && (
                         <List
@@ -174,10 +191,22 @@ const GroupManagement = () => {
                                     key={user._id}
                                     onClick={() => handleAddUser(user)}
                                     className="cursor-pointer hover:bg-gray-200"
-                                    style={{ padding: '8px 16px', borderRadius: '8px', backgroundColor: '#f0f0f0', marginBottom: '4px' }}
+                                    style={{
+                                        padding: '8px 16px',
+                                        borderRadius: '8px',
+                                        backgroundColor: '#f0f0f0',
+                                        marginBottom: '4px',
+                                    }}
                                 >
                                     <List.Item.Meta
-                                        avatar={<Avatar src={user.profileImage || 'https://icon-library.com/images/anonymous-avatar-icon/anonymous-avatar-icon-25.jpg'} />}
+                                        avatar={
+                                            <Avatar
+                                                src={
+                                                    user.profileImage ||
+                                                    'https://icon-library.com/images/anonymous-avatar-icon/anonymous-avatar-icon-25.jpg'
+                                                }
+                                            />
+                                        }
                                         title={<span className="text-gray-800 font-medium">{user.name}</span>}
                                         description={<span className="text-gray-500 text-sm">{user.userName}</span>}
                                     />
@@ -186,7 +215,7 @@ const GroupManagement = () => {
                         />
                     )
                 )}
-                {selectedUsers.length >= 1 &&
+                {selectedUsers.length >= 1 && (
                     <div className="mb-4">
                         <p>Selected Users</p>
                         <List
@@ -198,7 +227,14 @@ const GroupManagement = () => {
                                     className="flex justify-between items-center bg-gray-100 rounded-lg p-2 mb-2"
                                 >
                                     <List.Item.Meta
-                                        avatar={<Avatar src={user.profileImage || 'https://icon-library.com/images/anonymous-avatar-icon/anonymous-avatar-icon-25.jpg'} />}
+                                        avatar={
+                                            <Avatar
+                                                src={
+                                                    user.profileImage ||
+                                                    'https://icon-library.com/images/anonymous-avatar-icon/anonymous-avatar-icon-25.jpg'
+                                                }
+                                            />
+                                        }
                                         title={<span className="text-gray-800 font-medium">{user.name}</span>}
                                     />
                                     <Button
@@ -209,15 +245,16 @@ const GroupManagement = () => {
                                     />
                                 </List.Item>
                             )}
-                        />  
+                        />
                     </div>
-                }  
+                )}
             </Modal>
             {editGroupModelOpen && (
-                <EditGroup groups={groups} setGroups={setGroups} onClose={() => setEditGroupModelOpen(false)}  />
+                <EditGroup groups={groups} setGroups={setGroups} onClose={() => setEditGroupModelOpen(false)} />
             )}
         </div>
     );
+    
 };
 
 export default GroupManagement;

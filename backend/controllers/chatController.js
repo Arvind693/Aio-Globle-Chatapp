@@ -30,6 +30,46 @@ const fetchAllChats = async (req, res) => {
   }
 };
 
+const fetchAllChatsForChatHistory = async (req, res) => {
+  const { userId } = req.params;
+
+  try {
+    // Find all chats where the user is a participant
+    const chats = await Chat.find({
+      users: { $elemMatch: { $eq: userId } },
+    })
+      .populate('users', '-password') // Populate user details, excluding password
+      .populate('groupAdmin', 'name email') // Populate group admin details
+      .sort({ updatedAt: -1 }); // Sort chats by latest updated
+
+    // Extract all chat IDs for querying messages
+    const chatIds = chats.map((chat) => chat._id);
+
+    // Fetch all messages associated with the user's chats
+    const messages = await Message.find({
+      chat: { $in: chatIds },
+    })
+      .populate('sender', 'name email profileImage') // Populate sender details
+      .populate('chat', 'chatName users isGroupChat'); // Populate chat details
+
+    res.status(200).json({
+      success: true,
+      message: 'Chats and messages retrieved successfully',
+      data: {
+        chats,
+        messages,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching chats and messages',
+      error: error.message,
+    });
+  }
+};
+
+
 
 // Route for create or one and one chat
 const accessChat = async (req, res) => {
@@ -394,6 +434,7 @@ const deleteChat = async (req, res) => {
 
 module.exports = {
   fetchAllChats,
+  fetchAllChatsForChatHistory,
   accessChat,
   fetchChats,
   initializeAdminChats,

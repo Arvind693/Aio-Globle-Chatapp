@@ -18,7 +18,7 @@ const AdminNavbar = () => {
         setToggleProfile(!toggleProfile);
     }
     const menuItems = [
-        { key: '/chat', label: 'Chats Place', icon: <MessageOutlined />, path: '/chat' },
+        { key: '/chat', label: 'Chat Box', icon: <MessageOutlined />, path: '/chat' },
         { key: '/admin/user-management', label: 'User Management', icon: <UserOutlined />, path: '/admin/user-management' },
         { key: '/admin/group-management', label: 'Group Management', icon: <GroupOutlined />, path: '/admin/group-management' },
         { key: '/admin/auto-responses-management', label: 'Auto Response Management', icon: <RobotOutlined />, path: '/admin/auto-responses-management' },
