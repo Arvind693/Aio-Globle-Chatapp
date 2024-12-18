@@ -5,12 +5,15 @@ import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 import ChatProvider from './Context/ChatProvider';
+import GlobalPopupProvider from './Context/GlobalPopupProvider';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <BrowserRouter>
     <ChatProvider>
-      <App />
+      <GlobalPopupProvider> 
+        <App />
+      </GlobalPopupProvider>
     </ChatProvider>
   </BrowserRouter>
 );

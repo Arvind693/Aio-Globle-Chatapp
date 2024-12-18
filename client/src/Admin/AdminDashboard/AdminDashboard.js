@@ -36,7 +36,7 @@ const AdminDashboard = () => {
                         ]}
                         wrapper="span"
                         speed={40}
-                        style={{ fontSize: '1.25em', display: 'block', color: 'gray' }}
+                        className="text-lg max-md:text-xs text-gray-700 block"
                         repeat={Infinity}
                     />
                 </div>

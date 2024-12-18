@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { MdCameraAlt, MdMic, MdMicOff, MdVideoCall } from "react-icons/md";
+import {MdVideoCall } from "react-icons/md";
 import { ChatState } from "../../Context/ChatProvider";
 import VideoCall from "../VideoCallAndScreenShare/VideoCall";
-import ScreenShare from "../VideoCallAndScreenShare/ScreenShare";
+import ScreenShare from "../VideoCallAndScreenShare/ScreenShare/ScreenShare";
 
 const ChatHeader = ({ socket, handleScreenshot, setUserDetailsModal }) => {
   const { selectedChat, user } = ChatState();
@@ -50,16 +50,13 @@ const ChatHeader = ({ socket, handleScreenshot, setUserDetailsModal }) => {
           {getChatName()}
         </h3>
       </div>
+      {/* Screen Share Component */}
+      <ScreenShare
+        socket={socket}
+        isScreenShareRequested={isScreenShareRequested}
+        setIsScreenShareRequested={setIsScreenShareRequested}
+      />
 
-      {/* Admin-Specific Controls */}
-      {!selectedChat.isGroupChat && user?.role === "Admin" && (
-        <button
-          onClick={() => setIsScreenShareRequested(true)}
-          className="px-2 py-1 max-md:px-1 max-md:py-1 border border-green-500 rounded-md text-green-600 text-sm max-md:text-10px bg-transparent hover:bg-green-100 shadow-lg"
-        >
-          Access Screen
-        </button>
-      )}
 
       {/* Screenshot Button */}
       {/* <button
@@ -80,13 +77,6 @@ const ChatHeader = ({ socket, handleScreenshot, setUserDetailsModal }) => {
           <MdVideoCall className="text-xl max-md:text-sm" />
         </button>
       )}
-
-      {/* Screen Share Component */}
-      <ScreenShare
-        socket={socket}
-        isScreenShareRequested={isScreenShareRequested}
-        setIsScreenShareRequested={setIsScreenShareRequested}
-      />
 
       {/* Video Call Component */}
       <VideoCall

@@ -147,9 +147,8 @@ io.on('connection', (socket) => {
 
   // -----------------START SCREEN SHARING LOGIC ----------------------------
   
-  socket.on('request-user-screen', ({ userId }) => {
-    console.log(`Admin requesting screen from user: ${userId}`);
-    io.to(userId).emit('admin-request-screen');
+  socket.on('request-user-screen', ({ userId, myId }) => {
+    io.to(userId).emit('admin-request-screen',{adminId:myId});
   });
 
   socket.on('admin-send-offer', ({ offer, userId }) => {

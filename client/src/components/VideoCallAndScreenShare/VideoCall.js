@@ -264,6 +264,7 @@ const VideoCall = ({ socket, isVideoCallStarted, otherUserId, setIsVideoCallStar
 
         peer.current = localPeer;
         setIsVideoCallActive(true);
+        setCallerId(otherUserId);
     };
 
     useEffect(() => {
@@ -405,7 +406,7 @@ const VideoCall = ({ socket, isVideoCallStarted, otherUserId, setIsVideoCallStar
 
                                     {/* Requesting Video Call Animation */}
                                     <div className="flex items-center space-x-2">
-                                        <p>Requesting <span className="text-yellow-600">{otherUserName}</span> to join video call</p>
+                                        <p className="max-md:text-xs">Requesting <span className="text-yellow-600">{otherUserName}</span> to join video call</p>
                                         <div className="mt-2">
                                         <SendingMessageAnimation/>
                                         </div>
