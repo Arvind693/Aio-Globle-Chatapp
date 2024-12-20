@@ -89,7 +89,7 @@ const Login = () => {
               type="text"
               id="userName"
               value={userName}
-              placeholder='Enter your userName'
+              placeholder='Username'
               onChange={(e) => setUserName(e.target.value)}
               required
               className="max-md:text-10px max-md:p-1 mt-1 p-2 block w-full border border-gray-300 rounded-md shadow-sm"
@@ -105,7 +105,7 @@ const Login = () => {
                 type={showPassword ? "text" : "password"}
                 id="password"
                 value={password}
-                placeholder="Create password"
+                placeholder="Password"
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 className="text-xs max-md:p-2 p-2 block w-full border border-gray-300 rounded-md shadow-sm pr-10"
@@ -123,7 +123,7 @@ const Login = () => {
           <div>
             <button
               type="submit"
-              className="max-md:text-10px max-md:p-1 w-full py-2 px-4 rounded-md bg-blue-600 text-white hover:bg-blue-700 transition duration-300"
+              className="max-md:text-10px max-md:p-2 w-full py-2 px-4 rounded-md bg-blue-600 text-white hover:bg-blue-700 transition duration-300"
               disabled={loader}
             >
               {loader ? <Spin size='small' /> : 'Sign In'}

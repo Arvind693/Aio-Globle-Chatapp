@@ -33,9 +33,10 @@ const registerAdmin = async (req, res) => {
             name,
             userName,
             password,
+            isMainAdmin:true,
             role: "Admin",
             userPermissions: [],
-            autoResponseData: [], // Admin can manage this after creation
+            autoResponseData: [], 
             groupSettings: {
                 canAddUsers: true,
                 canRemoveUsers: true,
@@ -232,10 +233,36 @@ const deleteUser = async (req, res) => {
     }
 };
 
+const makeAdmin = async (req, res) => {
+    console.log("User Role updating..")
+    try {
+        const { userId } = req.params;
+        const { role } = req.body;
+
+        if (!['Admin', 'User'].includes(role)) {
+            return res.status(400).json({ message: 'Invalid role' });
+        }
+
+        const user = await User.findByIdAndUpdate(
+            userId,
+            { role },
+            { new: true }
+        );
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        res.status(200).json({ message: 'User role updated successfully', user });
+    } catch (error) {
+        console.error('Error updating role:', error);
+        res.status(500).json({ message: 'Failed to update role' });
+    }
+}
 
 const getAllUsers = async (req, res) => {
     try {
-        const users = await User.find({}, {
+        const users = await User.find({ isMainAdmin: false }, {
             password: 1,
             name: 1,
             userName: 1,
@@ -632,11 +659,20 @@ const addAllowedContact = async (req, res) => {
     }
 };
 
+const checkUsers = async (req, res) => {
+    try {
+        const usersExist = await User.exists({});
+        res.status(200).json({ success: true, usersExist: !!usersExist });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Error checking users' });
+    }
+}
 
 module.exports = {
     registerAdmin,
     loginAdmin,
     getAllUsers,
+    makeAdmin,
     registerUser,
     getAllGroups,
     updatePermissions,
@@ -651,4 +687,5 @@ module.exports = {
     removeAllowedContact,
     addAllowedContact,
     deleteUser,
+    checkUsers,
 };

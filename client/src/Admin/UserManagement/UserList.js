@@ -5,6 +5,9 @@ import AllowedContact from './AllowedContact';
 import AddContactPopup from './AddContactPopup';
 import { AiFillDelete, AiFillEye, AiFillEyeInvisible } from 'react-icons/ai';
 import UserChatHistory from './UserChatHistory';
+import { ChatState } from '../../Context/ChatProvider';
+import UserDetailsModal from './UserDetailsModal';
+import { FaCrown } from 'react-icons/fa';
 
 const UserList = ({ users, setUsers, fetchUsers, showModal }) => {
     const [isAddContactPopupVisible, setIsAddContactPopupVisible] = useState(false);
@@ -16,6 +19,8 @@ const UserList = ({ users, setUsers, fetchUsers, showModal }) => {
     const [passwordVisibility, setPasswordVisibility] = useState({});
     const [isChatHistoryVisible, setIsChatHistoryVisible] = useState(false);
     const [chatUserId, setChatUserId] = useState(null);
+    const [isUserDetailsVisible, setIsUserDetailsVisible] = useState(false);
+    const [selectedUser, setSelectedUser] = useState(null);
 
     useEffect(() => {
         const initialPermissions = users.reduce((acc, user) => {
@@ -134,6 +139,17 @@ const UserList = ({ users, setUsers, fetchUsers, showModal }) => {
         setIsChatHistoryVisible(true);
     };
 
+    const handleUserClick = (user) => {
+        console.log("Button Clicked")
+        setSelectedUser(user);
+        setIsUserDetailsVisible(true);
+    };
+
+    const handleUserDetailsClose = () => {
+        setIsUserDetailsVisible(false);
+        setSelectedUser(null);
+    };
+
     return (
         <div className='bg-transparent'>
             <div className="flex flex-col max-md:flex-col md:flex-row justify-center md:gap-10 max-md:gap-4 p-2 items-center bg-gradient-to-r from-gray-800 to-blue-600 shadow-lg rounded mb-8">
@@ -162,13 +178,23 @@ const UserList = ({ users, setUsers, fetchUsers, showModal }) => {
                     filteredUsers.map((user) => (
                         <div key={user._id} className="bg-gray-50 p-4 rounded-lg shadow-md">
                             <div className="flex items-center justify-between">
-                                <div className='flex gap-1 items-center'>
-                                    <img src={user.profileImage || 'https://icon-library.com/images/anonymous-avatar-icon/anonymous-avatar-icon-25.jpg'}
-                                        alt={user.name} className={`h-10 w-10 max-md:w-6 max-md:h-6 max-md:border-2 rounded-full border-2 
-                                            ${user.isOnline
-                                                ? 'border-green-500 animate-borderPulse'
-                                                : ''}`}
-                                    />
+                                <div className='flex gap-1 items-center'
+
+                                >
+                                    <div className="relative">
+                                        <img
+                                            onClick={() => handleUserClick(user)}
+                                            src={user.profileImage || 'https://icon-library.com/images/anonymous-avatar-icon/anonymous-avatar-icon-25.jpg'}
+                                            alt={user.name}
+                                            className={`h-10 w-10 max-md:w-6 max-md:h-6 rounded-full border-2 cursor-pointer ${user.isOnline ? 'border-green-500 animate-borderPulse' : 'border-gray-300'
+                                                }`}
+                                        />
+                                        {user.role === "Admin" && (
+                                            <span className="absolute bottom-8 right-2 max-md:bottom-6 max-md:right-1 bg-yellow-500 text-white text-xs p-1 rounded-full shadow-lg flex items-center justify-center">
+                                                <FaCrown className="text-xs text-white" />
+                                            </span>
+                                        )}
+                                    </div>
                                     <div>
                                         <p className='text-10px'>Username: {user.userName}</p>
                                         <div className="relative flex items-center">
@@ -281,6 +307,15 @@ const UserList = ({ users, setUsers, fetchUsers, showModal }) => {
                     userId={chatUserId}
                 />
             </div>
+            {/* User Details Modal */}
+            {selectedUser && (
+                <UserDetailsModal
+                    open={isUserDetailsVisible}
+                    onClose={handleUserDetailsClose}
+                    user={selectedUser}
+                    fetchUsers={fetchUsers}
+                />
+            )}
         </div>
     );
 };

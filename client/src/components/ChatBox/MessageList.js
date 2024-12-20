@@ -1,10 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { FaTrash } from 'react-icons/fa';
+import { FaPlay, FaTrash } from 'react-icons/fa';
 import SendingMessageAnimation from '../Animations/SendingMessageAnimation';
 import ChatTypingLoader from '../ChatTypingLoader/ChatTypingLoader';
 import { ChatState } from '../../Context/ChatProvider';
 import { Spin } from 'antd';
 import ImageModal from '../Animations/ImageModal';
+import AudioPlayer from './AudioPlayer';
+import VideoPlayer from './VideoPlayer';
 
 const MessageList = ({ messages, isTyping, hoveredMessage, setHoveredMessage, handleDeleteMessage, loading }) => {
     const { user, selectedChat } = ChatState();
@@ -88,6 +90,7 @@ const MessageList = ({ messages, isTyping, hoveredMessage, setHoveredMessage, ha
                                                     <span
                                                         key={index}
                                                         className={/[\uD800-\uDBFF][\uDC00-\uDFFF]|\p{Emoji_Presentation}|\p{Emoji_Modifier_Base}/gu.test(char) ? "text-xl max-md:text-sm" : ""}
+                                                        style={/[\uD800-\uDBFF][\uDC00-\uDFFF]|\p{Emoji_Presentation}|\p{Emoji_Modifier_Base}/gu.test(char) ? { border: 'none', outline: 'none' } : {}}
                                                     >
                                                         {char}
                                                     </span>
@@ -103,6 +106,20 @@ const MessageList = ({ messages, isTyping, hoveredMessage, setHoveredMessage, ha
                                                         onClick={() => handleImageClick(msg.file)}
                                                         className="max-w-full max-h-40 max-md:w-20 rounded-lg cursor-pointer"
                                                     />
+                                                ) : msg.file.match(/\.(mp4|mkv|avi)$/i) ? (
+                                                    <div>
+                                                        <VideoPlayer src={msg.file}  thumbnail={msg.file.replace('/upload/', '/upload/so_5/').replace(/\.[^/.]+$/, '.jpg')}/>
+                                                    </div>
+                                                ) : msg.file.match(/\.(mp3|wav|ogg|mpeg)$/i) ? (
+                                                    <div>
+                                                        <AudioPlayer src={msg.file} />
+                                                        <button
+                                                            className="flex items-center gap-2 text-blue-500 font-semibold underline text-sm max-md:text-10px"
+                                                            onClick={() => window.open(msg.file, '_blank')}
+                                                        >
+                                                            Download
+                                                        </button>
+                                                    </div>
                                                 ) : (
                                                     <a
                                                         href={msg.file}
@@ -115,7 +132,6 @@ const MessageList = ({ messages, isTyping, hoveredMessage, setHoveredMessage, ha
                                                 )}
                                             </div>
                                         )}
-
                                         <div className="flex justify-between items-center gap-1 mt-1 max-md:mt-0">
                                             <p className="text-xs max-md:text-6px text-gray-700">
                                                 {formatTime(msg.createdAt)}

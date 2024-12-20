@@ -7,10 +7,11 @@ import ChatHeader from './ChatHeader';
 import MessageList from './MessageList';
 import EditGroup from '../../Admin/GroupManagement/EditGroup';
 import MessageInput from './MessageInput';
+import { message } from 'antd';
 
 const serverHost = process.env.REACT_APP_SERVER_HOST;
 const SOCKET_ENDPOINT = process.env.NODE_ENV === "production"
-  ? "wss://aio-globle-chatapp.onrender.com" // For secure WebSocket
+  ? "wss://aio-globle-chatapp.onrender.com" 
   : `ws://${serverHost}:5000`;
 let socket, selectedChatCompare;
 let typingTimeout;
@@ -25,7 +26,6 @@ const ChatBox = () => {
   const [userDetailsModal, setUserDetailsModal] = useState(false);
   const [hoveredMessage, setHoveredMessage] = useState(null);
   const [selectedFile, setSelectedFile] = useState(null);
-  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
 
   const typingTimeoutRef = useRef(null);
   const messagesEndRef = useRef(null);
@@ -86,7 +86,7 @@ const ChatBox = () => {
       });
 
       if (selectedChat?._id === incomingChatId) {
-        scrollToBottom(); // Scroll only if the incoming message belongs to the selected chat
+        scrollToBottom(); 
       }
     };
 
@@ -114,7 +114,7 @@ const ChatBox = () => {
     };
   }, [selectedChat, socket, messages]);
 
-  // Automatically mark messages as seen when the user views the chat
+
   useEffect(() => {
     if (!selectedChat || !socketConnected) return;
 
@@ -221,6 +221,8 @@ const ChatBox = () => {
 
   const sendMessage = async (e) => {
     e.preventDefault();
+    const file=selectedFile ? URL.createObjectURL(selectedFile) : null;
+    console.log("file:",file)
 
     if (!newMessage.trim() && !selectedFile) return;
     const tempId = Date.now();
@@ -274,10 +276,14 @@ const ChatBox = () => {
 
       socket.emit("send message", data);
     } catch (error) {
-      console.error("Error sending message:", error);
-      setMessages((prevMessages) =>
-        prevMessages.filter((msg) => msg._id !== tempId)
-      );
+      message.error("Failed to send Message",2);
+      setMessages((prevMessages) => {
+        const updatedMessages = { ...prevMessages }; 
+        if (updatedMessages[chatId]) {
+          updatedMessages[chatId] = updatedMessages[chatId].filter((msg) => msg._id !== tempId);
+        }
+        return updatedMessages;
+      });
     }
   };
 

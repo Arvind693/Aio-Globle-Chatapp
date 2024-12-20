@@ -11,7 +11,7 @@ const ChatPage = () => {
   const { user, selectedChat} = ChatState();
   
   return (
-    <div className='w-full border-2'> 
+    <div className='w-full'> 
       {user ? (
         <div className="chatPageMainContainer">
           <div>

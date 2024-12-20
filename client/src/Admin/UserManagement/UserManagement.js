@@ -6,6 +6,7 @@ import {AiFillEye, AiFillEyeInvisible } from 'react-icons/ai';
 import { message, Spin, Modal } from 'antd';
 import UserList from '../UserManagement/UserList';
 import AdminNavbar from '../AdminNavbar/AdminNavbar';
+import { ChatState } from '../../Context/ChatProvider';
 
 const serverHost = process.env.REACT_APP_SERVER_HOST;
 const ENDPOINT = process.env.NODE_ENV === "production"
@@ -15,6 +16,7 @@ const ENDPOINT = process.env.NODE_ENV === "production"
 let socket = io(ENDPOINT);
 
 const UserManagement = () => {
+    const {getConfig} = ChatState();
     const [users, setUsers] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [searchResults, setSearchResults] = useState([]);
@@ -62,7 +64,7 @@ const UserManagement = () => {
 
     const fetchUsers = async () => {
         try {
-            const response = await axios.get('/api/admin/users');
+            const response = await axios.get('/api/admin/users', getConfig());
             const filteredUsers = response.data.data.filter(
                 (u) => u._id !== admin?._id
             );
@@ -82,13 +84,7 @@ const UserManagement = () => {
             setLoading(true);
             setError('');
             try {
-                const config = {
-                    headers: {
-                        Authorization: `Bearer ${adminInfo.token}`,
-                    },
-                };
-
-                const { data } = await axios.get(`/api/admin/search?q=${searchTerm}`, config);
+                const { data } = await axios.get(`/api/admin/search?q=${searchTerm}`, getConfig());
 
                 setSearchResults(data.data);
                 setLoading(false);
@@ -127,14 +123,8 @@ const UserManagement = () => {
         setPasswordMismatch(false);
         setLoading(true);
         try {
-            const config = {
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${adminInfo?.token}`,
-                },
-            };
             const { name, userName, password, permissions } = formData;
-            await axios.post('/api/admin/registeruser', { name, userName, password, permissions }, config);
+            await axios.post('/api/admin/registeruser', { name, userName, password, permissions }, getConfig());
             message.success('User registered successfully');
             setFormData({
                 name: '',
@@ -161,15 +151,8 @@ const UserManagement = () => {
 
     const initializeAdminChats = async () => {
         try {
-            const config = {
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${adminInfo?.token}`,
-                },
-            };
-
             // Set request body to `null` if no data needs to be sent
-            await axios.post(`/api/chat/initialize-admin-chats`, {}, config);
+            await axios.post(`/api/chat/initialize-admin-chats`, {}, getConfig());
 
             console.log("Admin created chat with all users");
         } catch (error) {
@@ -227,7 +210,7 @@ const UserManagement = () => {
         <div className="min-h-screen p-0 bg-gray-300">
             <AdminNavbar />
             {/* Site URL Section */}
-            <div className="bg-white shadow-lg rounded-lg p-6 mb-10 max-md:mb-3 mt-2 max-w-lg mx-auto max-md:w-72 border border-gray-200 text-center">
+            {/* <div className="bg-white shadow-lg rounded-lg p-6 mb-10 max-md:mb-3 mt-2 max-w-lg mx-auto max-md:w-72 border border-gray-200 text-center">
                 <h4 className="text-lg font-semibold text-gray-700 mb-4">Share Site URL</h4>
                 <div className="flex items-center justify-between bg-gray-100 p-3 rounded-lg">
                     <span className="text-gray-700 text-sm truncate">{siteUrl}</span>
@@ -239,7 +222,7 @@ const UserManagement = () => {
                         <CopyOutlined />
                     </button>
                 </div>
-            </div>
+            </div> */}
 
             {/* Modal for User Registration */}
             <Modal

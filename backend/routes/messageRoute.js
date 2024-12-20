@@ -9,17 +9,38 @@ const { fetchNotification, deleteNotificationsForChat, deleteNotificationByMessa
 
 const router = express.Router();
 
-// Cloudinary Storage configuration for resume, skill icons, and project thumbnails
+
 const cloudinaryStorage = new CloudinaryStorage({
     cloudinary: cloudinary,
     params: async (req, file) => {
-        const fileExtension = file.mimetype.split('/')[1]; // Get file extension (e.g., jpg, png, pdf)
+        try {
+            const fileExtension = file.mimetype.split('/')[1];
+            const fileType = file.mimetype.split("/")[0];
+            const allowedFileTypes = ['audio', 'video', 'image', 'application'];
 
-        return {
-            folder: 'aio-globel_messages_files', // Cloudinary folder for profile image
-            format: fileExtension,
-            public_id: `file_${Date.now()}`, // Include the extension in the public ID
-        };
+            if (!allowedFileTypes.includes(fileType)) {
+                throw new Error(`Unsupported file type: ${fileType}`);
+            }
+
+            // Dynamic folder based on file type
+            const folderName =
+                fileType === 'audio'
+                    ? 'aio-globel_audio_files' // Separate folder for audio
+                    : 'aio-globel_messages_files'; // Default folder for other files
+
+            // Use 'raw' resource type for audio for better compatibility
+            const resourceType = fileType === 'audio' ? 'raw' : fileType === 'video' ? 'video' : 'auto';
+
+            return {
+                folder: folderName,
+                format: fileExtension, // Ensure file extension matches MIME type
+                public_id: `file_${Date.now()}`,
+                resource_type: resourceType, // Set resource type dynamically
+            };
+        } catch (error) {
+            console.error('Error in Cloudinary Storage configuration:', error.message);
+            throw error;
+        }
     },
 });
 

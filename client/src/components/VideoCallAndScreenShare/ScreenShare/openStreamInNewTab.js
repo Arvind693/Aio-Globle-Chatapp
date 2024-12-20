@@ -17,7 +17,7 @@ export const openStreamInNewTab = (stream, stopScreenAccessForBoth) => {
         position: absolute;
         bottom: 20px;
         left: 50%;
-        transform: translateX(-50%);
+        transform: translateX(-50%);  
         padding: 10px 20px;
         border: 1px solid #f87171;
         background-color: red;

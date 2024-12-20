@@ -237,7 +237,7 @@ const ScreenShare = ({
 
     return (
         <>
-            {!isScreenShareRequested && !isScreenShareOpen && user.role === "Admin" && window.innerWidth >= 768 &&(
+            {!isScreenShareRequested && !isScreenShareOpen && user.role === "Admin" && window.innerWidth >= 500 &&(
                 <button
                     onClick={() => setIsScreenShareRequested(true)}
                     className="px-2 py-1 max-md:px-1 max-md:py-1 border border-green-500 rounded-md text-green-600 text-sm max-md:text-10px bg-transparent hover:bg-green-100 shadow-lg"

@@ -17,7 +17,9 @@ const { registerAdmin,
     searchUsers,
     removeAllowedContact,
     addAllowedContact,
-    deleteUser} = require('../controllers/adminController');
+    deleteUser,
+    makeAdmin,
+    checkUsers} = require('../controllers/adminController');
 const router = express.Router();
 
 // Cloudinary Storage configuration for resume, skill icons, and project thumbnails
@@ -39,19 +41,21 @@ const upload = multer({ storage: cloudinaryStorage });
 
 router.post('/register', upload.single('profileImage'), registerAdmin);
 router.post('/login', loginAdmin);
-router.get('/users', getAllUsers);
+router.get('/users',protect, getAllUsers);
+router.put('/make-admin/:userId',makeAdmin);
 router.get('/groups',protect, getAllGroups);
 router.put('/permissions/:userId', updatePermissions)
-router.get('/autoresponses',getAutoResponses);
-router.post('/autoresponses',createAutoResponse);
-router.delete('/autoresponses/:id',deleteAutoResponse);
-router.put('/autoresponses/:id',updateAutoResponse);
+router.get('/autoresponses',protect,getAutoResponses);
+router.post('/autoresponses',protect,createAutoResponse);
+router.delete('/autoresponses/:id',protect,deleteAutoResponse);
+router.put('/autoresponses/:id',protect, updateAutoResponse);
 router.get('/search',protect,searchUsers);
 router.post('/registeruser',protect,registerUser);
 router.get('/getuser/:id',protect,getUserById);
 router.delete('/:userId/contacts/:contactId', removeAllowedContact);
 router.put('/:userId/contacts', addAllowedContact);
 router.delete('/users/:id', deleteUser);
+router.get('/check-users',checkUsers);
 // router.post('/chat', createChat);
 // router.put('/update-user',upload.single('profileImage'),protect,updateUserProfile);
 

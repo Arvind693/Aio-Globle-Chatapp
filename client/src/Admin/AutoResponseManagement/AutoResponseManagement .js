@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { message, Spin } from 'antd';
+import { message, Modal, Spin } from 'antd';
 import AdminNavbar from '../AdminNavbar/AdminNavbar';
 import { CiEdit } from "react-icons/ci";
 import { MdDelete } from "react-icons/md";
+import { ChatState } from '../../Context/ChatProvider';
 
 const AutoResponseManagement = () => {
+    const {getConfig} = ChatState();
     const [autoResponses, setAutoResponses] = useState([]);
     const [formData, setFormData] = useState({ trigger: '', response: '' });
     const [editingId, setEditingId] = useState(null);
@@ -17,7 +19,7 @@ const AutoResponseManagement = () => {
 
     const fetchAutoResponses = async () => {
         try {
-            const response = await axios.get('/api/admin/autoresponses');
+            const response = await axios.get('/api/admin/autoresponses',getConfig());
             setAutoResponses(response.data.autoResponses);
         } catch (error) {
             console.error('Error fetching auto-responses:', error);
@@ -33,7 +35,7 @@ const AutoResponseManagement = () => {
         setLoading(true);
         if (editingId) {
             try {
-                await axios.put(`/api/admin/autoresponses/${editingId}`, formData);
+                await axios.put(`/api/admin/autoresponses/${editingId}`, formData,getConfig());
                 message.success('Auto-response updated successfully', 2);
                 setFormData({ trigger: '', response: '' });
                 setEditingId(null);
@@ -46,7 +48,7 @@ const AutoResponseManagement = () => {
             }
         } else {
             try {
-                await axios.post('/api/admin/autoresponses', formData);
+                await axios.post('/api/admin/autoresponses', formData,getConfig());
                 message.success('Auto-response added successfully', 2);
                 setFormData({ trigger: '', response: '' });
                 fetchAutoResponses();
@@ -66,13 +68,24 @@ const AutoResponseManagement = () => {
 
     const handleDelete = async (id) => {
         try {
-            await axios.delete(`/api/admin/autoresponses/${id}`);
+            await axios.delete(`/api/admin/autoresponses/${id}`,getConfig());
             message.success('Auto-response deleted successfully', 2);
             fetchAutoResponses();
         } catch (error) {
             console.error('Error deleting auto-response:', error);
             message.error('Failed to delete auto-response. Please try again.', 2);
         }
+    };
+
+    const confirmRemoveResponse = (userId) => {
+        Modal.confirm({
+            title: 'Are you sure you want to delete this AutoResponse?',   
+            content: 'This action cannot be undone.',
+            okText: 'Yes',
+            okType: 'danger',
+            cancelText: 'No',
+            onOk: () => handleDelete (userId),
+        });
     };
 
     return (
@@ -142,7 +155,7 @@ const AutoResponseManagement = () => {
                                             <CiEdit className='text-lg max-md:text-xs text-green-500'/>
                                         </button>
                                         <button
-                                            onClick={() => handleDelete(ar._id)}
+                                            onClick={() => confirmRemoveResponse(ar._id)}
                                             className="px-3 py-1 text-red-600 border rounded hover:bg-red-50"
                                         >
                                            <MdDelete className='text-lg max-md:text-xs text-red-700'/>
@@ -158,4 +171,4 @@ const AutoResponseManagement = () => {
     );
 };
 
-export default AutoResponseManagement;
+export default AutoResponseManagement;  

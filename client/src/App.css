@@ -4,3 +4,20 @@
     box-sizing: border-box;
 }
 
+/* Remove border from selected emoji */
+.emoji-picker-react .emoji-categories button:focus,
+.emoji-picker-react .emoji-categories button:active,
+.emoji-picker-react .emoji-scroll-wrapper::-webkit-scrollbar-thumb {
+  outline: none;
+  border: none;
+  box-shadow: none;
+}
+
+/* Remove border for individual emojis */
+.emoji-picker-react .emoji-group .emoji-item:focus,
+.emoji-picker-react .emoji-group .emoji-item:active {
+  outline: none;
+  border: none;
+  box-shadow: none;
+}
+

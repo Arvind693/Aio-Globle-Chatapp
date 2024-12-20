@@ -7,7 +7,7 @@ import EditGroup from './EditGroup';
 import { ChatState } from '../../Context/ChatProvider';
 
 const GroupManagement = () => {
-    const { selectedChat, setSelectedChat, user } = ChatState();
+    const { selectedChat, setSelectedChat, user, getConfig } = ChatState();
     const [groups, setGroups] = useState([]);
     const [users, setUsers] = useState([]);
     const [selectedUsers, setSelectedUsers] = useState([]);
@@ -18,8 +18,6 @@ const GroupManagement = () => {
     const [loading, setLoading] = useState(false);
     const [editGroupModelOpen, setEditGroupModelOpen] = useState(false);
     const [error, setError] = useState('');
-    console.log(groups)
-    const adminInfo = JSON.parse(localStorage.getItem('adminInfo'));
 
     useEffect(() => {
         fetchGroups();
@@ -28,13 +26,7 @@ const GroupManagement = () => {
 
     const fetchGroups = async () => {
         try {
-            const config = {
-                headers: {
-                    Authorization: `Bearer ${adminInfo.token}`,
-                },
-            };
-
-            const response = await axios.get('/api/admin/groups', config);
+            const response = await axios.get('/api/admin/groups', getConfig());
             setGroups(response.data.data);
         } catch (error) {
             console.error('Error fetching groups:', error);
@@ -43,7 +35,7 @@ const GroupManagement = () => {
 
     const fetchUsers = async () => {
         try {
-            const response = await axios.get('/api/admin/users');
+            const response = await axios.get('/api/admin/users',getConfig());
             setUsers(response.data.data);
         } catch (error) {
             console.error('Error fetching users:', error);
@@ -61,13 +53,7 @@ const GroupManagement = () => {
             setLoading(true);
             setError(''); // Clear previous errors
             try {
-                const config = {
-                    headers: {
-                        Authorization: `Bearer ${adminInfo.token}`,
-                    },
-                };
-
-                const { data } = await axios.get(`/api/user/search?q=${search}`, config);
+                const { data } = await axios.get(`/api/user/search?q=${search}`, getConfig());
 
                 setSearchResult(data.data); // Update with search results
                 setLoading(false);
@@ -79,7 +65,7 @@ const GroupManagement = () => {
         };
 
         fetchUsers();
-    }, [search, adminInfo.token]);
+    }, [search]);
     // Handle creating a new group
     const handleCreateGroup = async () => {
         if (!newGroupName.trim() || selectedUsers.length === 0) {
@@ -88,12 +74,7 @@ const GroupManagement = () => {
         }
 
         try {
-            const config = {
-                headers: {
-                    Authorization: `Bearer ${adminInfo.token}`,
-                },
-            };
-            const { data } = await axios.post(`/api/chat/group`, { name: newGroupName, users: selectedUsers.map((user) => user._id) }, config);
+            const { data } = await axios.post(`/api/chat/group`, { name: newGroupName, users: selectedUsers.map((user) => user._id) }, getConfig());
             setNewGroupName('');
             setIsCreateGroupModalOpen(false);
             fetchGroups();
@@ -122,40 +103,48 @@ const GroupManagement = () => {
             >
                 Create Group
             </button>
-    
+
             {/* Group List */}
             <div className="w-full px-8 flex flex-col items-center">
                 {/* Header */}
                 <div className="w-full flex justify-center border-b-4 border-blue-500 pb-2">
                     <h4 className="text-3xl max-md:text-xl font-semibold text-gray-800">Groups</h4>
                 </div>
-    
+
                 {/* Group List */}
-                <div className="w-full p-8 max-w-3xl mt-4 space-y-3 max-md:space-y-2 h-[60vh] overflow-y-auto"> 
-                    {groups.map((group) => (
-                        <div
-                            key={group._id}
-                            onClick={() => {
-                                setEditGroupModelOpen(true);
-                                setSelectedChat(group);
-                            }}
-                            className="flex items-center bg-white shadow-lg rounded-lg p-4 cursor-pointer transition-transform duration-300 hover:shadow-xl hover:scale-105 border-l-4 border-blue-500"
-                        >
-                            {/* Group Icon */}
-                            <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full flex justify-center items-center text-white text-xl font-bold mr-4">
-                                <TeamOutlined style={{ fontSize: '24px' }} />
-                            </div>
-    
-                            {/* Group Name */}
-                            <div className="flex-1">
-                                <h5 className="text-lg text-gray-800 font-semibold">{group.chatName}</h5>
-                                <p className="text-sm text-gray-500">Click to manage this group</p>
-                            </div>
+                <div className="w-full p-8 max-w-3xl mt-4 space-y-3 max-md:space-y-2 h-[60vh] overflow-y-auto">
+                    {groups.length === 0 ? (
+                        <div className="flex items-center justify-center h-full">
+                            <p className="text-gray-500 text-lg font-semibold">
+                                No groups available. Create a new group to get started!
+                            </p>
                         </div>
-                    ))}
+                    ) : (
+                        groups.map((group) => (
+                            <div
+                                key={group._id}
+                                onClick={() => {
+                                    setEditGroupModelOpen(true);
+                                    setSelectedChat(group);
+                                }}
+                                className="flex items-center bg-white shadow-lg rounded-lg p-4 cursor-pointer transition-transform duration-300 hover:shadow-xl hover:scale-105 border-l-4 border-blue-500"
+                            >
+                                {/* Group Icon */}
+                                <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full flex justify-center items-center text-white text-xl font-bold mr-4">
+                                    <TeamOutlined style={{ fontSize: '24px' }} />
+                                </div>
+
+                                {/* Group Name */}
+                                <div className="flex-1">
+                                    <h5 className="text-lg text-gray-800 font-semibold">{group.chatName}</h5>
+                                    <p className="text-sm text-gray-500">Click to manage this group</p>
+                                </div>
+                            </div>
+                        ))
+                    )}
                 </div>
             </div>
-    
+
             {/* Create Group Modal */}
             <Modal
                 title="Create Group"
@@ -169,14 +158,14 @@ const GroupManagement = () => {
                     value={newGroupName}
                     onChange={(e) => setNewGroupName(e.target.value)}
                 />
-    
+
                 <Input
                     placeholder="Search Users..."
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                     className="mb-3 mt-3"
                 />
-    
+
                 {loading ? (
                     <div className="text-center">
                         <Spin />
@@ -254,7 +243,7 @@ const GroupManagement = () => {
             )}
         </div>
     );
-    
+
 };
 
 export default GroupManagement;

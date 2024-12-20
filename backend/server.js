@@ -170,6 +170,7 @@ io.on('connection', (socket) => {
     io.to(userId).emit('force-stop-screen-share')
   })
   // ---------------------------END SCREEN SHARE LOGIC-----------------------------
+  // ---------------------------START Video Calling---------------------------------------
   socket.on("start-video-call", ({ offer, userId, myId, myName }) => {
     io.to(userId).emit("incoming-video-call", { offer, callerId: myId, callerName:myName });
   });
@@ -199,7 +200,37 @@ io.on('connection', (socket) => {
   socket.on("call-accepted",({callerId})=>{
     io.to(callerId).emit("call-accepted-by-other-user");
   });
+  // --------------------END VIDEO CALL--------------------------------
+// ----------------------START AUDIO CALLL-------------------------
+socket.on("start-audio-call", ({ offer, userId, myId, myName }) => {
+  io.to(userId).emit("incoming-audio-call", { offer, callerId: myId, callerName:myName });
+});
 
+// Send answer to caller
+socket.on("send-audio-answer", ({ answer, callerId }) => {
+  io.to(callerId).emit("receive-audio-answer", { answer });
+});
+
+// Exchange ICE candidates
+socket.on("send-ice-candidate", ({ candidate, userId }) => {
+  io.to(userId).emit("receive-ice-candidate", { candidate });
+});
+
+// End video call
+socket.on("end-audio-call", ({ userId }) => {
+  io.to(userId).emit("audio-call-ended");
+});
+socket.on("call-timeout", ({ userId }) => {
+  io.to(userId).emit("call-timed-out", { message: "The caller stopped the call due to timeout." });
+});
+
+socket.on("reject-audio-call", ({ callerId }) => {
+  io.to(callerId).emit("audio-call-rejected", { callerId, reason: "User is busy" });
+});
+
+socket.on("audio-call-accepted",({callerId})=>{
+  io.to(callerId).emit("audio-call-accepted-by-other-user");
+});
 
   socket.on('logout', ({ userId }) => {
     io.emit('update-user-status', { userId, isOnline: false });

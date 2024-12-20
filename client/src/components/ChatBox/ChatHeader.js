@@ -1,13 +1,15 @@
 import React, { useEffect, useState } from "react";
-import {MdVideoCall } from "react-icons/md";
+import { MdVideoCall, MdCall } from "react-icons/md";
 import { ChatState } from "../../Context/ChatProvider";
 import VideoCall from "../VideoCallAndScreenShare/VideoCall";
 import ScreenShare from "../VideoCallAndScreenShare/ScreenShare/ScreenShare";
+import AudioCall from "../VideoCallAndScreenShare/AudioCall/AudioCall";
 
 const ChatHeader = ({ socket, handleScreenshot, setUserDetailsModal }) => {
   const { selectedChat, user } = ChatState();
   const [isScreenShareRequested, setIsScreenShareRequested] = useState(false);
   const [isVideoCallStarted, setIsVideoCallStarted] = useState(false);
+  const [isAudioCallStarted, setIsAudioCallStarted] = useState(false);
   const [otherUserId, setOtherUserId] = useState(null);
   // Extract Other User ID
   useEffect(() => {
@@ -56,18 +58,17 @@ const ChatHeader = ({ socket, handleScreenshot, setUserDetailsModal }) => {
         isScreenShareRequested={isScreenShareRequested}
         setIsScreenShareRequested={setIsScreenShareRequested}
       />
-
-
-      {/* Screenshot Button */}
-      {/* <button
-        onClick={handleScreenshot}
-        className="flex items-center bg-gradient-to-r from-blue-600 to-red-400 text-white px-3 py-1 rounded-md hover:bg-blue-700"
-      >
-        <MdCameraAlt size={20} className="max-md:hidden" />
-        <span className="max-md:text-xs">Screenshot</span>
-      </button> */}
-
-
+      
+      <div className=" flex items-center gap-4"> 
+        {/* Audio Call Button */}
+      {!selectedChat.isGroupChat && (
+        <button
+          onClick={() => setIsAudioCallStarted(true)}
+          className="bg-green-500 text-white p-2 rounded-full hover:bg-green-600"
+        >
+          <MdCall className="text-xl max-md:text-sm" />
+        </button>
+      )}
       {/* Video Call Button */}
       {!selectedChat.isGroupChat && (
         <button
@@ -77,6 +78,18 @@ const ChatHeader = ({ socket, handleScreenshot, setUserDetailsModal }) => {
           <MdVideoCall className="text-xl max-md:text-sm" />
         </button>
       )}
+      </div>
+
+
+      {/* Audio Call Component */}
+      <AudioCall
+        socket={socket}
+        isAudioCallStarted={isAudioCallStarted}
+        otherUserId={otherUserId}
+        setIsAudioCallStarted={setIsAudioCallStarted}
+        otherUserName={getChatName()}
+        profileImage={getProfileImage()}
+      />
 
       {/* Video Call Component */}
       <VideoCall

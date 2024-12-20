@@ -22,7 +22,10 @@ const ChatProvider = ({ children }) => {
   const [notification, setNotification] = useState([]);
   const [chats, setChats] = useState([]);
   const [hasUserInteracted, setHasUserInteracted] = useState(false);
-  const audio = React.useRef(new Audio(NotificationAudioPath)); // Use a ref for the audio
+  const audio = React.useRef(new Audio(NotificationAudioPath));
+  const [adminInfo, setAdminInfo] = useState(() =>
+    JSON.parse(localStorage.getItem("adminInfo")) || null
+  );
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -33,6 +36,7 @@ const ChatProvider = ({ children }) => {
         const adminInfo = JSON.parse(localStorage.getItem("adminInfo"));
 
         if (adminInfo?.user) {
+          setAdminInfo(adminInfo);
           setUser(adminInfo.user);
           if (
             location.pathname === "/" ||
@@ -143,6 +147,19 @@ const ChatProvider = ({ children }) => {
     setSelectedChat(null);
   };
 
+  const getConfig = () => {
+    if (!adminInfo || !adminInfo.token) {
+      console.warn("Admin info or token is missing");
+      return {};
+    }
+
+    return {
+      headers: {
+        Authorization: `Bearer ${adminInfo.token}`,
+      },
+    };
+  };
+
   return (
     <ChatContext.Provider
       value={{
@@ -157,6 +174,7 @@ const ChatProvider = ({ children }) => {
         setChats,
         adminLogout,
         logout,
+        getConfig,
       }}
     >
       {children}

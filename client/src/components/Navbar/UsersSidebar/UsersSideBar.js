@@ -15,7 +15,7 @@ let socket;
 const Sidebar = () => {
   const [onlineUsers, setOnlineUsers] = useState({});
   const [loggedUser, setLoggedUser] = useState(null);
-  const { selectedChat, setSelectedChat, chats, setChats, user, notification, setNotification, } = ChatState();
+  const { selectedChat, setSelectedChat, chats, setChats, user, notification, setNotification,getConfig } = ChatState();
   const [loading, setLoading] = useState(true);
   
   const [notificationCounts, setNotificationCounts] = useState(() => {
@@ -52,7 +52,7 @@ const Sidebar = () => {
 
   const fetchUsers = async () => {
     try {
-      const response = await axios.get('/api/admin/users');
+      const response = await axios.get('/api/admin/users',getConfig());
       setOnlineUsers(
         response.data.data.reduce((acc, user) => {
           acc[user._id] = { isOnline: user.isOnline };

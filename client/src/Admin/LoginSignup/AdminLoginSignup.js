@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { message, Spin } from 'antd';
 import { useNavigate } from 'react-router-dom';
@@ -8,14 +8,33 @@ import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 const AdminLoginSignUp = () => {
   const [isSignUp, setIsSignUp] = useState(false);
   const [name, setName] = useState('');
-  const [userName, setuserName] = useState('');           // For both Sign In and Sign Up
-  const [password, setPassword] = useState('');     // For both Sign In and Sign Up
-  const [profileImage, setProfileImage] = useState(null);  // For optional profile image (Sign Up)
-  const [error, setError] = useState(null);         // To display any error messages
+  const [userName, setuserName] = useState('');          
+  const [password, setPassword] = useState('');     
+  const [profileImage, setProfileImage] = useState(null); 
+  const [error, setError] = useState(null);         
   const [loader, setLoader] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [showSignUp, setShowSignUp] = useState(false);
   const navigate = useNavigate();
 
+
+  useEffect(() => {
+    const checkUsers = async () => {
+      try {
+        const response = await axios.get('/api/admin/check-users');
+        if (response.data.success) {
+          setShowSignUp(response.data.usersExist === false); 
+        } else {
+          message.error('Error fetching user data.');
+        }
+      } catch (error) {
+        console.error('Error checking users:', error);
+        message.error('Failed to fetch user data.');
+      }
+    };
+
+    checkUsers();
+  }, []);
 
   const validateUsername = (username) => {
     const re = /^[a-zA-Z][a-zA-Z0-9_]{2,14}$/;
@@ -109,11 +128,20 @@ const AdminLoginSignUp = () => {
           </p>
 
           {/* Call to Action */}
-          <button
+          <p
             className="px-6 py-2 max-md:hidden max-md:px-2 max-md:py-1 text-sm bg-yellow-300 text-black font-semibold rounded-full hover:bg-yellow-400 transition duration-300"
           >
             Begin Your Admin Session With SignIn/SignUp
-          </button>
+          </p>
+
+          {showSignUp && (
+            <button
+              className="px-6 py-2 max-md:hidden max-md:px-2 max-md:py-1 text-sm bg-yellow-300 text-black font-semibold rounded-full hover:bg-yellow-400 transition duration-300 mt-2"
+              onClick={() => setIsSignUp(true)}
+            >
+              Sign Up as Admin
+            </button>
+          )}
         </div>
 
         {/* Login/SignUp form */}
@@ -208,7 +236,7 @@ const AdminLoginSignUp = () => {
               </button>
             </div>
 
-            <div className="text-center mt-4">
+            {/* <div className="text-center mt-4">
               {isSignUp ? (
                 <p className="text-xs">
                   Already have an account?{' '}
@@ -223,8 +251,9 @@ const AdminLoginSignUp = () => {
                     Sign Up
                   </span>
                 </p>
+
               )}
-            </div>
+            </div> */}
           </form>
         </div>
       </div>
