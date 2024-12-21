@@ -48,7 +48,7 @@ const ChatHeader = ({ socket, handleScreenshot, setUserDetailsModal }) => {
             className="h-full w-full object-cover"
           />
         </div>
-        <h3 className="text-lg max-md:text-sm text-black font-semibold truncate">
+        <h3 className="text-lg max-md:text-10px text-black font-semibold truncate">
           {getChatName()}
         </h3>
       </div>

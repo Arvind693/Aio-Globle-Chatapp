@@ -185,7 +185,7 @@ const AudioCall = ({ socket, isAudioCallStarted, otherUserId, setIsAudioCallStar
     }, [socket, selectedChat]);
 
     useEffect(() => {
-        if (remoteStream) {
+        if (remoteStream && remoteAudioRef.current) {
             remoteAudioRef.current.srcObject = remoteStream;
             remoteAudioRef.current.play().catch((error) => {
                 console.error("Error playing remote audio stream:", error);

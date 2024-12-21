@@ -10,8 +10,7 @@ import { openStreamInNewTab } from "./openStreamInNewTab";
 const ScreenShare = ({
     socket,
     isScreenShareRequested,
-    setIsScreenShareRequested,
-}) => {
+    setIsScreenShareRequested }) => {
     const { selectedChat, user } = ChatState();
     const { showPopup, hidePopup } = useGlobalPopup();
     const [isScreenShareOpen, setIsScreenShareOpen] = useState(false);
@@ -19,7 +18,6 @@ const ScreenShare = ({
     const [isAudioMuted, setIsAudioMuted] = useState(false);
     const [otherUserId, setOtherUserId] = useState(null);
     const [adminId, setAdminId] = useState(null);
-    const videoRef = useRef(null);
     const peer = useRef(null);
     const localStreamRef = useRef(null);
 
@@ -53,9 +51,6 @@ const ScreenShare = ({
 
             remotePeer.on("stream", (stream) => {
                 setRemoteStream(stream);
-                if (videoRef.current) {
-                    videoRef.current.srcObject = stream;
-                }
                 openStreamInNewTab(stream, stopScreenAccessForBoth);
             });
 
@@ -98,12 +93,6 @@ const ScreenShare = ({
     }, [socket, otherUserId]);
 
     useEffect(() => {
-        if (remoteStream && videoRef.current) {
-            videoRef.current.srcObject = remoteStream;
-        }
-    }, [remoteStream]);
-
-    useEffect(() => {
         if (isScreenShareRequested && otherUserId) {
             handleRequestUserScreen();
             setIsScreenShareOpen(true);
@@ -116,6 +105,9 @@ const ScreenShare = ({
                 video: true,
                 audio: true,
             });
+
+            const audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            audioStream.getAudioTracks().forEach((track) => stream.addTrack(track));
 
             if (!stream) {
                 throw new Error("No stream available. Please try again.");
@@ -136,11 +128,8 @@ const ScreenShare = ({
 
             localPeer.on("stream", (remoteStream) => {
                 setRemoteStream(remoteStream);
-                if (videoRef.current) {
-                    videoRef.current.srcObject = remoteStream;
-                }
             });
- 
+
             localPeer._pc.onconnectionstatechange = () => {
                 if (!peer.current || !peer.current._pc) return;
                 const state = localPeer._pc.connectionState;
@@ -197,7 +186,7 @@ const ScreenShare = ({
 
     const stopScreenAccessForBoth = () => {
         stopScreenShare();
-        socket.emit("force-stop-screen-share", { userId: otherUserId }); 
+        socket.emit("force-stop-screen-share", { userId: otherUserId });
     };
 
     useEffect(() => {
@@ -207,12 +196,13 @@ const ScreenShare = ({
     }, []);
 
     const toggleAudio = () => {
-        const audioTrack = localStreamRef.current?.getAudioTracks()[0]; 
+        setIsAudioMuted(!isAudioMuted);
+        const audioTrack = localStreamRef.current?.getAudioTracks()[0];
         if (audioTrack) {
             audioTrack.enabled = !audioTrack.enabled;
-            setIsAudioMuted(!audioTrack.enabled);
         }
     };
+
 
     const content = (
         <div className="flex items-center justify-center space-x-4">
@@ -237,7 +227,7 @@ const ScreenShare = ({
 
     return (
         <>
-            {!isScreenShareRequested && !isScreenShareOpen && user.role === "Admin" && window.innerWidth >= 500 &&(
+            {!isScreenShareRequested && !isScreenShareOpen && user.role === "Admin" && window.innerWidth >= 500 && (
                 <button
                     onClick={() => setIsScreenShareRequested(true)}
                     className="px-2 py-1 max-md:px-1 max-md:py-1 border border-green-500 rounded-md text-green-600 text-sm max-md:text-10px bg-transparent hover:bg-green-100 shadow-lg"
@@ -256,7 +246,15 @@ const ScreenShare = ({
                             Stop Screen Access
                         </button>
                     ) : (
-                        <p className="text-gray-500 text-sm max-md:text-10px">Waiting For Screen</p>
+                        <p className="text-gray-500 text-sm max-md:text-10px">Waiting For Screen
+                        <span
+                            onClick={stopScreenAccessForBoth}
+                            className="ml-1 px-2 py-1 max-md:px-1 max-md:py-1 border border-red-500 rounded-md text-red-600 text-sm max-md:text-10px bg-transparent hover:bg-red-100 shadow-lg"
+                        >
+                            Stop
+                        </span>
+                        </p>
+                        
                     )}
                 </div>
             )}

@@ -5,10 +5,10 @@ const RingtoneHandler = ({ play, stop }) => {
 
   useEffect(() => {
     if (play) {
-      audioRef.current.play().catch((err) => console.error("Error playing ringtone:", err));
+      audioRef.current.play().catch((err) => console.error("Error playing ringtone:", err)); 
     }
     if (stop) {
-      audioRef.current.pause();
+      audioRef.current.pause(); 
       audioRef.current.currentTime = 0;
     }
   }, [play, stop]);
@@ -16,9 +16,9 @@ const RingtoneHandler = ({ play, stop }) => {
   return (
     <audio ref={audioRef} loop>
       <source src="/Ringtone-Sound/ringtone-2.mp3" type="audio/mpeg" />
-      Your browser does not support the audio element.
+      Your browser does not support the audio element.  
     </audio>
-  );
+  ); 
 };
 
 export default RingtoneHandler;

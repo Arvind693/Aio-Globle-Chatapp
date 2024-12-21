@@ -11,7 +11,6 @@ import axios from 'axios';
 const Navbar = () => {
     const { setSelectedChat, user, notification, setNotification } = ChatState();
     const [toggleProfile, setToggleProfile] = useState(false);
-    const [showNotifications, setShowNotifications] = useState(false);
     const [openAutoResponseSidebar, setOpenAutoResponseSidebar] = useState(false);
 
     const fetchAllNotifications = async () => {
@@ -38,24 +37,6 @@ const Navbar = () => {
         setToggleProfile(!toggleProfile);
     }; 
 
-    const handleToggleNotifications = () => {
-        setShowNotifications(!showNotifications);
-    };
-
-    const handleClearNotification = (notificationId) => {
-        setNotification((prevNotifications) =>
-            prevNotifications.filter((notif) => notif._id !== notificationId)
-        );
-    };
-
-    const handleSelectNotification = (chatId) => {
-        const selectedNotification = notification.find((notif) => notif.chat._id === chatId);
-        setNotification((prevNotifications) =>
-            prevNotifications.filter((notif) => notif.chat._id !== chatId)
-        );
-        setSelectedChat(selectedNotification.chat);
-        setShowNotifications(!showNotifications)
-    };
 
     return (
         <nav className="bg-gradient-to-r from-white via-pink-400 to-purple-600 p-4 max-md:p-2">

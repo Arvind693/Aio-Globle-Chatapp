@@ -6,6 +6,7 @@ const ScreenShareCanvas = ({ stream }) => {
     const videoRef = useRef(null);
 
     useEffect(() => {
+        console.log("Canvas running...")
         const canvas = canvasRef.current;
         const context = canvas.getContext("2d");
 
@@ -32,6 +33,7 @@ const ScreenShareCanvas = ({ stream }) => {
         };
 
         return () => {
+            console.log("Canvas return running...")
             video.pause();
             video.srcObject = null;
         };

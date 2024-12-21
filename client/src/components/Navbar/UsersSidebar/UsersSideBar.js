@@ -2,8 +2,9 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import './UsersSideBar.css';
 import { ChatState } from '../../../Context/ChatProvider';
-import { FaCrown, FaCircle } from "react-icons/fa";
+import { FaCrown, FaSearch } from "react-icons/fa";
 import io from 'socket.io-client';
+import SearchUserSidebar from '../../SearchUserSidebar/SearchUserSidebar';
 
 const serverHost = process.env.REACT_APP_SERVER_HOST;
 
@@ -13,22 +14,17 @@ const SOCKET_ENDPOINT = process.env.NODE_ENV === "production"
 let socket;
 
 const Sidebar = () => {
+  const { selectedChat, setSelectedChat, chats, setChats, user, notification, setNotification,getConfig } = ChatState();
   const [onlineUsers, setOnlineUsers] = useState({});
   const [loggedUser, setLoggedUser] = useState(null);
-  const { selectedChat, setSelectedChat, chats, setChats, user, notification, setNotification,getConfig } = ChatState();
   const [loading, setLoading] = useState(true);
+  const [togglesearchPopup,setToggleSearchPopup] = useState(false);
   
   const [notificationCounts, setNotificationCounts] = useState(() => {
     const storedCounts = localStorage.getItem("notificationCounts");
     return storedCounts ? JSON.parse(storedCounts) : {};
   });
-
-  const userInfo = React.useMemo(() => {
-    return user?.role === 'Admin'
-      ? JSON.parse(localStorage.getItem('adminInfo'))
-      : JSON.parse(localStorage.getItem('userInfo'));
-  }, [user]);
-
+  
   // Initialize socket connection
   useEffect(() => {
     if (user) {
@@ -68,12 +64,7 @@ const Sidebar = () => {
   const fetchChats = async () => {
     setLoading(true);
     try {
-      const config = {
-        headers: {
-          authorization: `Bearer ${userInfo?.token}`,
-        },
-      };
-      const { data } = await axios.get('/api/chat', config);
+      const { data } = await axios.get('/api/chat', getConfig());
       setChats(data);
     } catch (error) {
       console.error('Error fetching chats:', error);
@@ -96,13 +87,7 @@ const Sidebar = () => {
     setSelectedChat(chat);
 
     try {
-      const config = {
-        headers: {
-          authorization: `Bearer ${userInfo?.token}`,
-        },
-      };
-
-      await axios.delete(`/api/message/delete-notification/${chat._id}`, config);
+      await axios.delete(`/api/message/delete-notification/${chat._id}`, getConfig());
       setNotification((prevNotifications) =>
         prevNotifications.filter((n) => n.chat !== chat._id)
       );
@@ -150,7 +135,13 @@ const Sidebar = () => {
   return (
     <div className="sidebarMainContainer w-1/4 h-full bg-gray-200 p-4 text-white flex flex-col max-md:p-2">
       {/* Header */}
-      <div className="p-4 border-b border-gray-700 max-md:p-0">
+      <div className="p-1 border-b border-gray-700 max-md:p-0  flex flex-col gap-0.5 items-center">
+        <button
+          onClick={()=>setToggleSearchPopup(!togglesearchPopup)}
+          className='text-gray-600 hover:text-gray-900' 
+        >
+          <FaSearch size={window.innerWidth < 640 ? 16 : 20}/>
+        </button>
         <h2 className="text-lg font-semibold text-black max-md:text-10px">MY Chats</h2>
       </div>
 
@@ -223,6 +214,9 @@ const Sidebar = () => {
             <div className="p-4 text-black">No chats found</div>
           )}
         </div>
+      )}
+      {togglesearchPopup &&(
+        <SearchUserSidebar toggleUserSearch={()=>setToggleSearchPopup(!togglesearchPopup)}/>
       )}
     </div>
   );

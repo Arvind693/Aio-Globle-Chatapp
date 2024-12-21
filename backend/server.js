@@ -152,7 +152,6 @@ io.on('connection', (socket) => {
   });
 
   socket.on('admin-send-offer', ({ offer, userId }) => {
-    console.log(`Admin sending offer to user: ${userId}`);
     io.to(userId).emit('admin-send-offer', { offer });
   });
 

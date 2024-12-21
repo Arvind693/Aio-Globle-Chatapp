@@ -46,6 +46,7 @@ const ChatProvider = ({ children }) => {
           }
         } else if (userInfo?.user) {
           setUser(userInfo.user);
+          setAdminInfo(userInfo);
           if (
             location.pathname === "/" ||
             location.pathname === "/user-login-signup"
