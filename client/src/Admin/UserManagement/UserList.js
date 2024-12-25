@@ -186,7 +186,7 @@ const UserList = ({ users, setUsers, fetchUsers, showModal }) => {
                                             onClick={() => handleUserClick(user)}
                                             src={user.profileImage || 'https://icon-library.com/images/anonymous-avatar-icon/anonymous-avatar-icon-25.jpg'}
                                             alt={user.name}
-                                            className={`h-10 w-10 max-md:w-6 max-md:h-6 rounded-full border-2 cursor-pointer ${user.isOnline ? 'border-green-500 animate-borderPulse' : 'border-gray-300'
+                                            className={`object-cover  h-10 w-10 max-md:w-6 max-md:h-6 rounded-full  border-2 cursor-pointer ${user.isOnline ? 'border-green-500 animate-borderPulse' : 'border-gray-300'
                                                 }`}
                                         />
                                         {user.role === "Admin" && (

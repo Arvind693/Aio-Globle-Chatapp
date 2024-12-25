@@ -103,7 +103,7 @@ const UserDetailsModal = ({ open, onClose, user = {}, fetchUsers }) => {
                             'https://icon-library.com/images/anonymous-avatar-icon/anonymous-avatar-icon-25.jpg'
                         }
                         alt={user.name || 'Anonymous'}
-                        className="h-20 w-20 rounded-full border border-gray-300"
+                        className="h-20 w-20 max-md:h-8 max-md:w-8 rounded-full border border-gray-300 object-cover "
                     />
                     <div>
                         <h3 className="text-lg font-semibold">{user.name}</h3>

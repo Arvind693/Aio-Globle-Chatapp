@@ -9,7 +9,7 @@ import axios from 'axios';
 import { FaCrown } from "react-icons/fa";
 
 const EditGroup = ({groups,setGroups, onClose }) => {
-    const { selectedChat, setSelectedChat, user, chats, setChats } = ChatState();
+    const { selectedChat, setSelectedChat, user, chats, setChats,getConfig } = ChatState();
     const [newGroupName, setNewGroupName] = useState('');
     const [toggleInput, setToggleInput] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
@@ -18,13 +18,11 @@ const EditGroup = ({groups,setGroups, onClose }) => {
     const [toggleAddUser, setToggleAddUser] = useState(false);
     const [error, setError] = useState('');
 
-    console.log("SelectedChat", selectedChat);
-
-    const adminInfo = JSON.parse(localStorage.getItem('adminInfo'));
+   const adminInfo = user.role==="Admin" ? JSON.parse(localStorage.getItem('adminInfo')) : JSON.parse(localStorage.getItem('userInfo'));
 
     useEffect(() => {
         fetchUsers();
-    }, [searchTerm, adminInfo.token]);
+    }, [searchTerm]);
 
     // Ensure selectedChat and user are not undefined
     if (!selectedChat || !user) {
@@ -40,13 +38,7 @@ const EditGroup = ({groups,setGroups, onClose }) => {
         setLoading(true);
         setError(''); // Clear previous errors
         try {
-            const config = {
-                headers: {
-                    Authorization: `Bearer ${adminInfo.token}`,
-                },
-            };
-
-            const { data } = await axios.get(`/api/user/search?q=${searchTerm}`, config);
+            const { data } = await axios.get(`/api/user/search?q=${searchTerm}`, getConfig());
 
             setSearchResults(data.data); // Update with search results
             setLoading(false);
@@ -59,11 +51,10 @@ const EditGroup = ({groups,setGroups, onClose }) => {
 
     // Ensure selectedChat.groupAdmin exists before trying to access _id
     const isAdmin = selectedChat.isGroupChat && selectedChat.groupAdmin && selectedChat.groupAdmin._id === adminInfo.user._id;
-    console.log("User Detals:",selectedChat.users.find((u) => u._id !== user._id))
     const chatDetails = selectedChat.isGroupChat
         ? {
             name: selectedChat.chatName,
-            members: selectedChat.users, // We no longer filter groupAdmin out here
+            members: selectedChat.users,
             type: 'Group',
             additionalInfo: selectedChat.groupDescription || 'No additional information'
         }
@@ -83,15 +74,9 @@ const EditGroup = ({groups,setGroups, onClose }) => {
             return;
         }
         try {
-            const config = {
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${adminInfo?.token}`,
-                },
-            };
             const body = { chatId: selectedChat._id, newGroupName };
 
-            await axios.put(`/api/chat/rename-group`, body, config);
+            await axios.put(`/api/chat/rename-group`, body, getConfig());
             setSelectedChat((prevChat) => ({
                 ...prevChat,
                 chatName: newGroupName,
@@ -107,17 +92,10 @@ const EditGroup = ({groups,setGroups, onClose }) => {
     // Remove User from Group Functionality
     const handleRemoveUser = async (userId) => {
         try {
-            const config = {
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${adminInfo?.token}`,
-                },
-            };
-
             const response = await axios.put(
                 `/api/chat/group/remove`,
                 { userId, chatId: selectedChat._id },
-                config
+                getConfig()
             );
 
             message.success(response.data.message, 2);
@@ -150,17 +128,10 @@ const EditGroup = ({groups,setGroups, onClose }) => {
 
     // Delete Group Functionality
     const handleDeleteGroup = async () => {
-        try { 
-            const config = {
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${adminInfo?.token}`,
-                },
-            };
-
+        try {
             const response = await axios.delete(`/api/chat/group`, {
                 data: { chatId: selectedChat._id },
-                ...config
+                ...getConfig()
             });
             message.success(response.data.message, 2);
             onClose();
@@ -177,17 +148,10 @@ const EditGroup = ({groups,setGroups, onClose }) => {
     // Add New User to Group Functionality
     const handleAddUser = async (userId) => {
         try {
-            const config = {
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${adminInfo?.token}`,
-                },
-            };
-
             const response = await axios.put(
                 `/api/chat/group/add`,
                 { userId, chatId: selectedChat._id },
-                config
+                getConfig()
             );
 
             const updatedChat = response.data.chat;
@@ -218,7 +182,7 @@ const EditGroup = ({groups,setGroups, onClose }) => {
                     <img
                         src={chatDetails.profileImage || 'https://icon-library.com/images/anonymous-avatar-icon/anonymous-avatar-icon-25.jpg'}
                         alt="Profile"
-                        className="h-10 w-10 max-md:h-8 max-sm:w-8 rounded-full object-cover shadow-lg shadow-gray-700"
+                        className="h-60 w-60 max-md:h-48 max-md:w-48 rounded-full object-cover shadow shadow-gray-700"
                     />
                     <div className='flex flex-col gap-1 items-center justify-center'>
                         <h2 className="text-lg max-md:text-12px text-gray-600 font-semibold">{chatDetails.name}</h2>
@@ -252,7 +216,7 @@ const EditGroup = ({groups,setGroups, onClose }) => {
                     )}
                 </div>
 
-                {chatDetails.type === 'Group' && (
+                {chatDetails.type === 'Group' && user.role==="Admin" && (
                     <div>
                         <p className="mb-2 text-lg max-md:text-10px text-yellow-600 font-semibold">Group Members:</p>
                         <ul className='h-40 bg-gray-500 rounded mb-2 grid sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-1 justify-center overflow-y-auto p-4'>

@@ -38,9 +38,7 @@ const ChatHeader = ({ socket, handleScreenshot, setUserDetailsModal }) => {
       <div className="flex items-center gap-1">
         <div
           className="h-10 w-10 max-md:h-6 max-md:w-6 rounded-full overflow-hidden cursor-pointer"
-          onClick={() => {
-            if (user?.role === "Admin") setUserDetailsModal(true);
-          }}
+          onClick={() =>setUserDetailsModal(true)}
         >
           <img
             src={getProfileImage()}

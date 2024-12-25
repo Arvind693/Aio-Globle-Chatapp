@@ -1,4 +1,4 @@
-export const openStreamInNewTab = (stream, stopScreenAccessForBoth) => {
+export const openStreamInNewTab = (stream, stopScreenAccessForBoth, localStreamRef) => {
     const newTabRef = window.open("", "_blank", `width=${window.screen.width},height=${window.screen.height}`);
 
     // Create the video element
@@ -10,36 +10,65 @@ export const openStreamInNewTab = (stream, stopScreenAccessForBoth) => {
     video.style.width = "100%";
     video.style.height = "100%";
 
+    // Create a container for the buttons
+    const buttonContainer = newTabRef.document.createElement("div");
+    buttonContainer.style = `
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+        position: absolute;
+        bottom: 20px;
+        width: 100%;
+    `;
+
     // Create the Stop button
     const stopButton = newTabRef.document.createElement("button");
     stopButton.textContent = "Stop";
     stopButton.style = `
-        position: absolute;
-        bottom: 20px;
-        left: 50%;
-        transform: translateX(-50%);  
         padding: 10px 20px;
         border: 1px solid #f87171;
         background-color: red;
-        color: #f87171;
+        color: white;
         border-radius: 8px;
         cursor: pointer;
         font-size: 16px;
     `;
-    stopButton.onmouseover = () => {
-        stopButton.style.backgroundColor = "#fee2e2";
-    };
-    stopButton.onmouseout = () => {
-        stopButton.style.backgroundColor = "transparent";
-    };
-
-    // Stop button onclick handler
     stopButton.onclick = () => {
-        stopScreenAccessForBoth();  // Call the passed stop function
-        newTabRef.close();  // Close the new tab
+        stopScreenAccessForBoth();
+        newTabRef.close();
     };
 
-    // Append the elements to the new tab's body
+    // Create the Mute/Unmute button
+    const audioButton = newTabRef.document.createElement("button");
+    audioButton.textContent = "Mute"; // Default text
+    audioButton.style = `
+        padding: 10px 20px;
+        border: 1px solid #2563eb;
+        background-color: #2563eb;
+        color: white;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 16px;
+    `;
+    audioButton.onclick = () => {
+        if (localStreamRef?.current) {
+            const audioTrack = localStreamRef.current.getAudioTracks()[0];
+            if (audioTrack) {
+                audioTrack.enabled = !audioTrack.enabled;
+                audioButton.textContent = audioTrack.enabled ? "Mute" : "Unmute"; // Update button text
+            } else {
+                console.error("No audio track found to toggle.");
+            }
+        } else {
+            console.error("Local stream is not initialized.");
+        }
+    };
+
+    // Append buttons to the container
+    buttonContainer.appendChild(stopButton);
+    buttonContainer.appendChild(audioButton);
+
+    // Append elements to the new tab's body
     const body = newTabRef.document.body;
     body.style.margin = "0";
     body.style.display = "flex";
@@ -50,7 +79,7 @@ export const openStreamInNewTab = (stream, stopScreenAccessForBoth) => {
     body.style.backgroundColor = "#000";
 
     body.appendChild(video);
-    body.appendChild(stopButton);
+    body.appendChild(buttonContainer);
 
     // Handle autoplay issues gracefully
     video.addEventListener("loadedmetadata", () => {

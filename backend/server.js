@@ -148,20 +148,27 @@ io.on('connection', (socket) => {
   // -----------------START SCREEN SHARING LOGIC ----------------------------
   
   socket.on('request-user-screen', ({ userId, myId }) => {
+    console.log("adminId at server:",myId)
     io.to(userId).emit('admin-request-screen',{adminId:myId});
   });
 
-  socket.on('admin-send-offer', ({ offer, userId }) => {
-    io.to(userId).emit('admin-send-offer', { offer });
+  socket.on("screen-share-denied-by-user", ({ adminId, userId}) =>{
+    io.to(adminId).emit('screen-share-denied-by-user')
+  })
+
+  socket.on("screen-access-connected",({adminId})=>{
+    io.to(adminId).emit("screen-access-connected");
+  })
+
+  socket.on('user-send-offer', ({ offer, userId }) => {
+    io.to(userId).emit('receive-offer', { offer });
   });
 
-  socket.on('user-send-answer', ({ answer, adminId }) => {
-    console.log(`User sending answer to admin: ${adminId}`);
+  socket.on('admin-send-answer', ({ answer, adminId }) => {
     io.to(adminId).emit('receive-answer', { answer });
   });
 
   socket.on('screen-share-stopped', ({ userId }) => {
-    console.log(`Screen share stopped by user: ${userId}`);
     io.to(userId).emit('screen-share-stopped');
   });
 

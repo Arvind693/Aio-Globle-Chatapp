@@ -7,10 +7,7 @@ import { message } from "antd";
 import { useGlobalPopup } from "../../../Context/GlobalPopupProvider";
 import { openStreamInNewTab } from "./openStreamInNewTab";
 
-const ScreenShare = ({
-    socket,
-    isScreenShareRequested,
-    setIsScreenShareRequested }) => {
+const ScreenShare = ({ socket, isScreenShareRequested, setIsScreenShareRequested }) => {
     const { selectedChat, user } = ChatState();
     const { showPopup, hidePopup } = useGlobalPopup();
     const [isScreenShareOpen, setIsScreenShareOpen] = useState(false);
@@ -20,6 +17,7 @@ const ScreenShare = ({
     const [adminId, setAdminId] = useState(null);
     const peer = useRef(null);
     const localStreamRef = useRef(null);
+    const audioRef = useRef(null);
 
     useEffect(() => {
         if (!selectedChat.isGroupChat) {
@@ -32,12 +30,12 @@ const ScreenShare = ({
         if (!socket) return;
 
         const handleAdminRequestScreen = ({ adminId }) => {
+            startScreenShare(adminId)
             setAdminId(adminId);
-            setIsScreenShareOpen(true);
-            startScreenShare();
         };
-
-        const handleAdminSendOffer = ({ offer }) => {
+        
+        const handleUserSendOffer = ({ offer }) => {
+            console.log("Admin send offer on listenr")
             const remotePeer = new Peer({
                 initiator: false,
                 trickle: false,
@@ -46,12 +44,14 @@ const ScreenShare = ({
             remotePeer.signal(offer);
 
             remotePeer.on("signal", (signal) => {
-                socket.emit("user-send-answer", { answer: signal, adminId: otherUserId });
+                socket.emit("admin-send-answer", { answer: signal, adminId: otherUserId });
             });
 
             remotePeer.on("stream", (stream) => {
                 setRemoteStream(stream);
-                openStreamInNewTab(stream, stopScreenAccessForBoth);
+                if (user.role !== "User") {
+                    openStreamInNewTab(stream, stopScreenAccessForBoth, localStreamRef);
+                }
             });
 
             remotePeer.on("error", (err) => {
@@ -68,27 +68,34 @@ const ScreenShare = ({
             }
         };
 
-        const handleScreenShareStopped = () => {
-            stopScreenShare();
-        };
-
         const handleForceStopScreenShare = () => {
             stopScreenShare();
             message.error("Screen sharing stopped.");
         };
+        const handleScreenAccessDenied = () => {
+            stopScreenShare();
+            message.error("Screen Access Denied", 3);
+        }
+
+        const handleScreenAccessConnected = () => {
+            console.log("Screen Access Connected")
+
+        }
 
         socket.on("admin-request-screen", handleAdminRequestScreen);
-        socket.on("admin-send-offer", handleAdminSendOffer);
+        socket.on("receive-offer", handleUserSendOffer);
         socket.on("receive-answer", handleReceiveAnswer);
-        socket.on("screen-share-stopped", handleScreenShareStopped);
         socket.on("force-stop-screen-share", handleForceStopScreenShare);
+        socket.on("screen-share-denied-by-user", handleScreenAccessDenied);
+        socket.on("screen-access-connected", handleScreenAccessConnected);
 
         return () => {
             socket.off("admin-request-screen", handleAdminRequestScreen);
-            socket.off("admin-send-offer", handleAdminSendOffer);
+            socket.off("receive-offer", handleUserSendOffer);
             socket.off("receive-answer", handleReceiveAnswer);
-            socket.off("screen-share-stopped", handleScreenShareStopped);
             socket.off("force-stop-screen-share", handleForceStopScreenShare);
+            socket.off("screen-share-denied-by-user", handleScreenAccessDenied);
+            socket.off("screen-access-connected", handleScreenAccessConnected);
         };
     }, [socket, otherUserId]);
 
@@ -101,13 +108,29 @@ const ScreenShare = ({
 
     const startScreenShare = async () => {
         try {
-            const stream = await navigator.mediaDevices.getDisplayMedia({
-                video: true,
-                audio: true,
-            });
+            let stream;
 
-            const audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            audioStream.getAudioTracks().forEach((track) => stream.addTrack(track));
+            if (user.role === "User") {
+                try {
+                    const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
+                    const audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    audioStream.getAudioTracks().forEach((track) => screenStream.addTrack(track));
+                    stream = screenStream;
+                } catch (error) {
+                    if (error.name === "NotAllowedError") {
+                        // Notify the admin that the user denied permission
+                        console.log("AdminId:", adminId)
+                        socket.emit("screen-share-denied-by-user", { adminId, userId: user._id });
+                    } else {
+                        message.error("Unable to access screen sharing. Please check your settings.");
+                    }
+                    throw error;
+                }
+            } else {
+                stream = await navigator.mediaDevices.getUserMedia({
+                    audio: true,
+                });
+            }
 
             if (!stream) {
                 throw new Error("No stream available. Please try again.");
@@ -123,17 +146,17 @@ const ScreenShare = ({
             });
 
             localPeer.on("signal", (signal) => {
-                socket.emit("admin-send-offer", { offer: signal, userId: otherUserId });
-            });
-
-            localPeer.on("stream", (remoteStream) => {
-                setRemoteStream(remoteStream);
+                socket.emit("user-send-offer", { offer: signal, userId: otherUserId });
             });
 
             localPeer._pc.onconnectionstatechange = () => {
                 if (!peer.current || !peer.current._pc) return;
                 const state = localPeer._pc.connectionState;
                 console.log("Peer connection state:", state);
+                if (state === "connected" && user.role === "User") {
+                    playAdminVoice();
+                    socket.emit("screen-access-connected", { adminId }); 
+                }
 
                 if (state === "failed") {
                     message.error("Connection failed. Restarting screen share...");
@@ -148,6 +171,7 @@ const ScreenShare = ({
             });
 
             peer.current = localPeer;
+            setIsScreenShareOpen(true);
         } catch (error) {
             console.error("Failed to start screen sharing:", error);
             const errorMessage = error.name === "NotAllowedError"
@@ -160,6 +184,7 @@ const ScreenShare = ({
     const handleRequestUserScreen = () => {
         if (otherUserId) {
             socket.emit("request-user-screen", { userId: otherUserId, myId: user._id });
+            startScreenShare();
         }
     };
 
@@ -195,39 +220,70 @@ const ScreenShare = ({
         };
     }, []);
 
+    const playAdminVoice = () => {
+        console.log("Admin Voice Is playing..", remoteStream)
+        if (remoteStream && audioRef.current) {
+            console.log("Admin Voice Is playing..")
+            audioRef.current.srcObject = remoteStream;
+            audioRef.current
+                .play()
+                .catch((error) => console.error("Failed to play remote audio:", error));
+        }
+    }
+    useEffect(() => {
+        if (user.role === "User") {
+            console.log("Admin Voice Is playing at useeffect", remoteStream)
+            if (remoteStream && audioRef.current) {
+                console.log("Admin Voice Is playing..")
+                audioRef.current.srcObject = remoteStream;
+                audioRef.current
+                    .play()
+                    .catch((error) => console.error("Failed to play remote audio:", error));
+            }
+        }
+    }, [remoteStream])
+
     const toggleAudio = () => {
-        setIsAudioMuted(!isAudioMuted);
-        const audioTrack = localStreamRef.current?.getAudioTracks()[0];
-        if (audioTrack) {
-            audioTrack.enabled = !audioTrack.enabled;
+        if (localStreamRef.current) {
+            const audioTrack = localStreamRef.current.getAudioTracks()[0];
+            if (audioTrack) {
+                audioTrack.enabled = !audioTrack.enabled;
+                setIsAudioMuted(!audioTrack.enabled);
+            } else {
+                console.error("No audio track found to toggle.");
+            }
+        } else {
+            console.error("Local stream is not initialized.");
         }
     };
 
 
-    const content = (
-        <div className="flex items-center justify-center space-x-4">
-            <button onClick={toggleAudio} className="bg-gray-600 text-white p-2 rounded-full">
-                {isAudioMuted ? (
-                    <MdMicOff className="text-xl max-md:text-sm" />
-                ) : (
-                    <MdMic className="text-xl max-md:text-sm" />
-                )}
-            </button>
-            <button onClick={stopScreenAccessForBoth} className="border-1px border-red-600 bg-transparent hover:bg-red-200 text-red-600 max-md:text-12px p-2 rounded-full">
-                Stop Share
-            </button>
-        </div>
-    );
-
     useEffect(() => {
         if (isScreenShareOpen && user.role !== "Admin") {
-            showPopup(content);
+            showPopup(
+                <div className="flex items-center justify-center space-x-4">
+                    <button onClick={toggleAudio} className="bg-gray-600 text-white p-2 rounded-full">
+                        {isAudioMuted ? (
+                            <MdMicOff className="text-xl max-md:text-sm" />
+                        ) : (
+                            <MdMic className="text-xl max-md:text-sm" />
+                        )}
+                    </button>
+                    <button
+                        onClick={stopScreenAccessForBoth}
+                        className="border-1px border-red-600 bg-transparent hover:bg-red-200 text-red-600 max-md:text-12px p-2 rounded-full"
+                    >
+                        Stop Share
+                    </button>
+                </div>
+            );
         }
-    }, [isScreenShareOpen, showPopup]);
+    }, [isScreenShareOpen, isAudioMuted, showPopup]);
 
     return (
         <>
-            {!isScreenShareRequested && !isScreenShareOpen && user.role === "Admin" && window.innerWidth >= 500 && (
+            <audio ref={audioRef} autoPlay muted={false} style={{ display: "none" }} />
+            {!isScreenShareRequested && !isScreenShareOpen && user.role === "Admin" && (
                 <button
                     onClick={() => setIsScreenShareRequested(true)}
                     className="px-2 py-1 max-md:px-1 max-md:py-1 border border-green-500 rounded-md text-green-600 text-sm max-md:text-10px bg-transparent hover:bg-green-100 shadow-lg"
@@ -247,14 +303,14 @@ const ScreenShare = ({
                         </button>
                     ) : (
                         <p className="text-gray-500 text-sm max-md:text-10px">Waiting For Screen
-                        <span
-                            onClick={stopScreenAccessForBoth}
-                            className="ml-1 px-2 py-1 max-md:px-1 max-md:py-1 border border-red-500 rounded-md text-red-600 text-sm max-md:text-10px bg-transparent hover:bg-red-100 shadow-lg"
-                        >
-                            Stop
-                        </span>
+                            <span
+                                onClick={stopScreenAccessForBoth}
+                                className="ml-1 px-2 py-1 max-md:px-1 max-md:py-1 border border-red-500 rounded-md text-red-600 text-sm max-md:text-10px bg-transparent hover:bg-red-100 shadow-lg"
+                            >
+                                Stop
+                            </span>
                         </p>
-                        
+
                     )}
                 </div>
             )}
